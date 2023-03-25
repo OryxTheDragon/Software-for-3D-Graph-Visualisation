@@ -13,8 +13,8 @@ namespace Assets.Classes.DataStructures
 
         public Graph()
         {
-            this.nodes = new Treap<string,Node>();
-            this.edges = new Treap<string,Edge>();
+            nodes = new Treap<string,Node>();
+            edges = new Treap<string,Edge>();
         }
 
         public void createNode(string node_id)
@@ -106,33 +106,36 @@ namespace Assets.Classes.DataStructures
                     }
                     else if (values[0].Equals("E"))
                     {
-                        if (values.Length != 5)
+                        if (values.Length > 5 || values.Length < 3)
                         {
                             Debug.LogErrorFormat("Invalid data format in line: {0}", line);
                             continue;
                         }
-                        string edgeId = values[1];
-                        Node startNode = searchNodes(values[2]);
-                        Node endNode = searchNodes(values[3]);
-                        if (startNode == null || endNode == null)
-                        {
-                            Debug.LogErrorFormat("Invalid data format in line: {0}", line);
-                            continue;
+                        else if (values.Length == 5) {
+                            string edgeId = values[1];
+                            Node startNode = searchNodes(values[2]);
+                            Node endNode = searchNodes(values[3]);
+                            if (startNode == null || endNode == null)
+                            {
+                                Debug.LogErrorFormat("Invalid data format in line: {0}", line);
+                                continue;
+                            }
+                            Direction direction = Direction.Omni_Directional;
+                            if (values.Length == 5 && values[4].Equals("0"))
+                            {
+                                direction = Direction.Omni_Directional;
+                            }
+                            if (values.Length == 5 && values[4].Equals("1"))
+                            {
+                                direction = Direction.Start_To_End;
+                            }
+                            if (values.Length == 5 && values[4].Equals("2"))
+                            {
+                                direction = Direction.End_To_Start;
+                            }
+                            createEdge(edgeId, startNode, endNode, direction);
                         }
-                        Direction direction = Direction.Omni_Directional;
-                        if (values.Length == 5 && values[4].Equals("0"))
-                        {
-                            direction = Direction.Omni_Directional;
-                        }
-                        if (values.Length == 5 && values[4].Equals("1"))
-                        {
-                            direction = Direction.Start_To_End;
-                        }
-                        if (values.Length == 5 && values[4].Equals("2"))
-                        {
-                            direction = Direction.End_To_Start;
-                        }
-                        createEdge(edgeId, startNode, endNode, direction);
+                        // TODO 3 value edges
                     }
                     else
                     {
