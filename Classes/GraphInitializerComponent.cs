@@ -5,11 +5,12 @@ using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
+
+using static GraphInitializerComponent;
 using static UnityEngine.Mathf;
 
 [ExecuteInEditMode]
-public class GraphComponent : MonoBehaviour
+public class GraphInitializerComponent : MonoBehaviour
 {
     public GameObject graphParent;
     public GameObject baseVertexModel;
@@ -26,10 +27,12 @@ public class GraphComponent : MonoBehaviour
     public TextMeshProUGUI fileName;
     public TextMeshProUGUI TextItem;
 
-    public ScrollRect NodeViewPort;
-    public ScrollRect EdgeViewPort;
+    public GameObject[] tabPages;
+    public Button[] tabButtons;
 
-
+    public GameObject listCellPrefab;
+    public GameObject NodeViewPort;
+    public GameObject EdgeViewPort;
 
     void Start()
     {
@@ -39,17 +42,19 @@ public class GraphComponent : MonoBehaviour
         }
     }
 
-
     public void instantiateGraph()
     {
+        int counter = 1;
         foreach (Node node in graph.getNodes())
         {
 
             GameObject newVertex = Instantiate(baseVertexModel, node.getPosition(), Quaternion.identity,graphParent.transform);
-
-            TextMeshProUGUI nodeTextItem = Instantiate(TextItem, NodeViewPort.transform);
-            nodeTextItem.name = "Node: " + node.getNodeId();
+            GameObject listCell = Instantiate(listCellPrefab, NodeViewPort.transform);
+            TextMeshProUGUI[] textComponents = listCell.GetComponentsInChildren<TextMeshProUGUI>();
+            textComponents[0].text = "" + counter++;
+            textComponents[1].text = node.getNodeId();
         }
+        counter = 1;
         foreach (Edge edge in graph.getEdges())
         {
             float x = (edge.getEndNode().getPosition().x - edge.getStartNode().getPosition().x);
@@ -63,28 +68,29 @@ public class GraphComponent : MonoBehaviour
 
             if (edge.getDirection() == Direction.Omni_Directional)
             {
-                connector = GameObject.Instantiate(omniDirectionalConnector, position, rotation, graphParent.transform);
+                connector = Instantiate(omniDirectionalConnector, position, rotation, graphParent.transform);
             }
             else if (edge.getDirection() == Direction.Start_To_End)
             {
-                connector = GameObject.Instantiate(startToEndConnector, position, rotation, graphParent.transform);
+                connector = Instantiate(startToEndConnector, position, rotation, graphParent.transform);
             }
             else if (edge.getDirection() == Direction.End_To_Start)
             {
-                connector = GameObject.Instantiate(endToStartConnector, position, rotation, graphParent.transform);
+                connector = Instantiate(endToStartConnector, position, rotation, graphParent.transform);
             }
             else
             {
-                connector = GameObject.Instantiate(baseEdgeModel, position, rotation, graphParent.transform);
+                connector = Instantiate(baseEdgeModel, position, rotation, graphParent.transform);
             }
             connector.transform.localScale = scale;
-            TextMeshProUGUI edgeTextItem = Instantiate(TextItem, EdgeViewPort.transform);
-            edgeTextItem.text = edge.getEdgeId();
-            edgeTextItem.name = "Edge: " + edge.getEdgeId();
+            GameObject listCell = Instantiate(listCellPrefab, EdgeViewPort.transform);
+            TextMeshProUGUI[] textComponents = listCell.GetComponentsInChildren<TextMeshProUGUI>();
+            textComponents[0].text = "" + counter++;
+            textComponents[1].text = edge.getEdgeId();
         }
     }
 
-    public void selectFile()
+    public void selectFileForImport()
     {
         string[] fileExtensions = { "csv" };
         string path = EditorUtility.OpenFilePanel("Select a File", "", string.Join(",", fileExtensions));
@@ -92,7 +98,29 @@ public class GraphComponent : MonoBehaviour
         {
             graph.loadGraphFromCSV(path, false);
             fileName.text = Path.GetFileName(path);
+            fileName.color = new Color(0,0.5f,0,1f);
         }
     }
 
+    public void ExportToCSV()
+    {
+        string[] fileExtensions = { "csv" };
+        string delimiter = ";";
+
+        string defaultPath = Application.dataPath;
+        string defaultFileName = "Exported Data";
+        string filePath = EditorUtility.SaveFilePanel("Save File", defaultPath, defaultFileName, fileExtensions[0]);
+
+        StreamWriter exportedFile = new StreamWriter(filePath);
+
+        foreach (Node node in graph.getNodes())
+        {
+            exportedFile.WriteLine("N" + delimiter + node.getNodeId() + delimiter + node.getPosition().x + delimiter + node.getPosition().y + delimiter + node.getPosition().z);
+        }
+        foreach (Edge edge in graph.getEdges())
+        {
+            exportedFile.WriteLine("E" + delimiter + edge.getEdgeId() + delimiter + edge.getStartNode().getNodeId() + delimiter + edge.getEndNode().getNodeId() + delimiter + (int) edge.getDirection());
+        }
+        exportedFile.Close();
+    }
 }
