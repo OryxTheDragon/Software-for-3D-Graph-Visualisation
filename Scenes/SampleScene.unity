@@ -916,9 +916,9 @@ MonoBehaviour:
   graphParent: {fileID: 485137778}
   baseVertexModel: {fileID: 5225428257518851890, guid: 743444b7e3976944ab8186e7e6fe7840, type: 3}
   baseEdgeModel: {fileID: 5975482577351263407, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
-  omniDirectionalConnector: {fileID: 5050268367218988994, guid: 71643e6e7301e814aa84d3ca9c6b04c4, type: 3}
-  startToEndConnector: {fileID: 5050268367218988994, guid: e20ea03fea9908f448194d85ce85966b, type: 3}
-  endToStartConnector: {fileID: 5050268367218988994, guid: b44285cc6d3dab6449cdc99e5c5911b3, type: 3}
+  DirectedConnector: {fileID: 5050268367218988994, guid: e20ea03fea9908f448194d85ce85966b, type: 3}
+  UndirectedConnector: {fileID: 5050268367218988994, guid: 71643e6e7301e814aa84d3ca9c6b04c4, type: 3}
+  highlightedMaterial: {fileID: 2100000, guid: 07f127dea11795c4cad2b4f0e7802a0b, type: 2}
   canvas: {fileID: 1028386948}
   fileName: {fileID: 1777672429}
   TextItem: {fileID: 4536343723135053272, guid: 48c6ff83422b5944b8ea57d0079f5ff9, type: 3}
@@ -933,6 +933,8 @@ MonoBehaviour:
   listCellPrefab: {fileID: 4117420241197427900, guid: 8c10ac57d425d004cbd079de0ceda0d6, type: 3}
   NodeViewPort: {fileID: 1086452677}
   EdgeViewPort: {fileID: 1866763400}
+  selectedNodes: []
+  selectedEdges: []
 --- !u!1 &332860043
 GameObject:
   m_ObjectHideFlags: 0

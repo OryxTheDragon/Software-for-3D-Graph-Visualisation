@@ -1,28 +1,35 @@
+using Assets.Classes;
 using Assets.Classes.DataObjects;
 using Assets.Classes.DataStructures;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-
-using static GraphInitializerComponent;
 using static UnityEngine.Mathf;
 
 [ExecuteInEditMode]
-public class GraphInitializerComponent : MonoBehaviour
+public class GraphManager : MonoBehaviour
 {
     public GameObject graphParent;
     public GameObject baseVertexModel;
     public GameObject baseEdgeModel;
 
-    public GameObject omniDirectionalConnector;
-    public GameObject startToEndConnector;
-    public GameObject endToStartConnector;
+    private int fieldSize = 500;
+
+
+    public GameObject DirectedConnector;
+    public GameObject UndirectedConnector;
+
+    public Material highlightedMaterial;
 
     public Canvas canvas;
 
     private Graph graph;
+    private Treap<string, GameObject> NodeGameObjects;
+    private Treap<string, GameObject> EdgeGameObjects;
 
     public TextMeshProUGUI fileName;
     public TextMeshProUGUI TextItem;
@@ -34,25 +41,48 @@ public class GraphInitializerComponent : MonoBehaviour
     public GameObject NodeViewPort;
     public GameObject EdgeViewPort;
 
+    public List<GameObject> selectedNodes;
+    public List<GameObject> selectedEdges;
+
+    private ObjectSelectionManager selectionManager;
+
     void Start()
     {
         if (Application.isPlaying)
         {
             graph = new Graph();
+            selectedNodes = new List<GameObject>();
+            selectedEdges = new List<GameObject>();
+            selectionManager = new ObjectSelectionManager(fieldSize);
         }
     }
 
     public void instantiateGraph()
     {
+        NodeGameObjects = new Treap<string, GameObject>();
+        EdgeGameObjects = new Treap<string, GameObject>();
+
         int counter = 1;
         foreach (Node node in graph.getNodes())
         {
-
-            GameObject newVertex = Instantiate(baseVertexModel, node.getPosition(), Quaternion.identity,graphParent.transform);
+            GameObject newVertex = Instantiate(baseVertexModel, node.getPosition(), Quaternion.identity, graphParent.transform);
             GameObject listCell = Instantiate(listCellPrefab, NodeViewPort.transform);
+            
+            NodeGameObjects.Insert(node.getNodeId(), newVertex);
+
             TextMeshProUGUI[] textComponents = listCell.GetComponentsInChildren<TextMeshProUGUI>();
+
+            listCell.GetComponent<Button>().onClick.AddListener(() => HighlightNodeFromUICell(node.getNodeId()));
             textComponents[0].text = "" + counter++;
             textComponents[1].text = node.getNodeId();
+            Renderer renderer = newVertex.GetComponent<Renderer>();
+            Vector3 pos = transform.position;
+            renderer.material.color =
+                new Color(
+                    Abs(pos.x) / fieldSize,
+                    Abs(pos.y) / fieldSize,
+                    Abs(pos.z) / fieldSize
+                );
         }
         counter = 1;
         foreach (Edge edge in graph.getEdges())
@@ -63,31 +93,45 @@ public class GraphInitializerComponent : MonoBehaviour
             float length = Sqrt((x * x) + (y * y) + (z * z)) / 4;
             Vector3 scale = new Vector3(baseEdgeModel.transform.localScale.x, length, baseEdgeModel.transform.localScale.z);
             Vector3 position = ((edge.getStartNode().getPosition() + edge.getEndNode().getPosition()) / 2);
-            Quaternion rotation = Quaternion.FromToRotation(Vector3.up, edge.getEndNode().getPosition() - edge.getStartNode().getPosition());
-            GameObject connector;
+            Quaternion rotation = Quaternion.FromToRotation(
+                Vector3.up,
+                edge.getEndNode().getPosition() - edge.getStartNode().getPosition());
 
-            if (edge.getDirection() == Direction.Omni_Directional)
+            GameObject connector;
+            if (edge.getDirection() == Direction.Undirected)
             {
-                connector = Instantiate(omniDirectionalConnector, position, rotation, graphParent.transform);
+                connector = Instantiate(UndirectedConnector, position, rotation, graphParent.transform);
             }
-            else if (edge.getDirection() == Direction.Start_To_End)
+            else if (edge.getDirection() == Direction.Directed)
             {
-                connector = Instantiate(startToEndConnector, position, rotation, graphParent.transform);
-            }
-            else if (edge.getDirection() == Direction.End_To_Start)
-            {
-                connector = Instantiate(endToStartConnector, position, rotation, graphParent.transform);
+                connector = Instantiate(DirectedConnector, position, rotation, graphParent.transform);
             }
             else
             {
                 connector = Instantiate(baseEdgeModel, position, rotation, graphParent.transform);
             }
             connector.transform.localScale = scale;
+
+            EdgeGameObjects.Insert(edge.getEdgeId(), connector);
             GameObject listCell = Instantiate(listCellPrefab, EdgeViewPort.transform);
             TextMeshProUGUI[] textComponents = listCell.GetComponentsInChildren<TextMeshProUGUI>();
+            listCell.GetComponent<Button>().onClick.AddListener(() => HighlightEdgeFromUICell(edge.getEdgeId()));
             textComponents[0].text = "" + counter++;
             textComponents[1].text = edge.getEdgeId();
         }
+    }
+
+    private void HighlightEdgeFromUICell(string edge_id)
+    {
+        GameObject selectedEdge = EdgeGameObjects.getTNode(edge_id);
+        selectionManager.SelectObject(selectedEdge);
+
+    }
+
+    private void HighlightNodeFromUICell(string node_id)
+    {
+        GameObject selectedNode = NodeGameObjects.getTNode(node_id);
+        selectionManager.SelectObject(selectedNode);
     }
 
     public void selectFileForImport()
@@ -98,7 +142,7 @@ public class GraphInitializerComponent : MonoBehaviour
         {
             graph.loadGraphFromCSV(path, false);
             fileName.text = Path.GetFileName(path);
-            fileName.color = new Color(0,0.5f,0,1f);
+            fileName.color = new Color(0, 0.5f, 0, 1f);
         }
     }
 
@@ -119,7 +163,7 @@ public class GraphInitializerComponent : MonoBehaviour
         }
         foreach (Edge edge in graph.getEdges())
         {
-            exportedFile.WriteLine("E" + delimiter + edge.getEdgeId() + delimiter + edge.getStartNode().getNodeId() + delimiter + edge.getEndNode().getNodeId() + delimiter + (int) edge.getDirection());
+            exportedFile.WriteLine("E" + delimiter + edge.getEdgeId() + delimiter + edge.getStartNode().getNodeId() + delimiter + edge.getEndNode().getNodeId() + delimiter + (int)edge.getDirection());
         }
         exportedFile.Close();
     }

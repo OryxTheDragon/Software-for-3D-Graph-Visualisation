@@ -9,7 +9,12 @@ namespace Assets.Scripts
         {
             Renderer renderer = GetComponent<Renderer>();
             Vector3 pos = transform.position;
-            renderer.material.color = new Color(Mathf.Abs(pos.x) / maximumPosition, Mathf.Abs(pos.y) / maximumPosition, Mathf.Abs(pos.z) / maximumPosition);
+            renderer.material.color =
+                new Color(
+                    Abs(pos.x) / maximumPosition,
+                    Abs(pos.y) / maximumPosition,
+                    Abs(pos.z) / maximumPosition
+                );
         }
     }
 }

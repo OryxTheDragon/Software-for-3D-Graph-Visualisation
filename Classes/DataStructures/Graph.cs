@@ -120,18 +120,14 @@ namespace Assets.Classes.DataStructures
                                 Debug.LogErrorFormat("Invalid data format in line: {0}", line);
                                 continue;
                             }
-                            Direction direction = Direction.Omni_Directional;
+                            Direction direction = Direction.Undirected;
                             if (values.Length == 5 && values[4].Equals("0"))
                             {
-                                direction = Direction.Omni_Directional;
+                                direction = Direction.Undirected;
                             }
                             if (values.Length == 5 && values[4].Equals("1"))
                             {
-                                direction = Direction.Start_To_End;
-                            }
-                            if (values.Length == 5 && values[4].Equals("2"))
-                            {
-                                direction = Direction.End_To_Start;
+                                direction = Direction.Directed;
                             }
                             createEdge(edgeId, startNode, endNode, direction);
                         }
@@ -183,7 +179,7 @@ namespace Assets.Classes.DataStructures
                         string edgeId = values[0];
                         string startNodeId = values[1];
                         string endNodeId = values[2];
-                        Direction direction = Direction.Omni_Directional; // Default to "undirected" :D
+                        Direction direction = Direction.Undirected; // Default to undirected
 
                         // Parse direction if provided
                         if (values.Length >= 4 && Direction.TryParse(values[3], true, out Direction parsedDirection))
