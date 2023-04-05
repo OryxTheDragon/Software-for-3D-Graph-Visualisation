@@ -11,10 +11,10 @@ namespace Assets.Classes
         private int currentPageIndex = 0;
         void Start()
         {
-            ShowPage(currentPageIndex);
+            showPage(currentPageIndex);
         }
 
-        public void ShowPage(int index){
+        public void showPage(int index){
 
             // Hide all pages except the current one
             for (int i = 0; i < tabPages.Length; i++)

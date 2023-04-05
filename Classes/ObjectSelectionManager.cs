@@ -5,27 +5,29 @@ namespace Assets.Classes
 {
     public class ObjectSelectionManager
     {
-        private List<GameObject> nodes = new List<GameObject>();
-        private List<GameObject> edges = new List<GameObject>();
-        private float intensity = 2.0f; // Increase for extra shiny selected nodes
+        private readonly List<GameObject> nodes;
+        private readonly List<GameObject> edges;
+        private readonly float intensity = 2.0f;
 
-        public ObjectSelectionManager(int field_width)
+        public ObjectSelectionManager()
         {
+            nodes = new List<GameObject>();
+            edges = new List<GameObject>();
         }
 
-        public void SelectObject(GameObject selectedObject)
+        public void selectObject(GameObject selectedObject)
         {
             if (selectedObject.CompareTag("Vertex"))
             {
                 if (!nodes.Contains(selectedObject))
                 {
                     nodes.Add(selectedObject);
-                    HighlightObject(selectedObject);
+                    highlightObject(selectedObject);
                 }
                 else
                 {
                     nodes.Remove(selectedObject);
-                    ResetObject(selectedObject);
+                    resetObject(selectedObject);
                 }
             }
             else if (selectedObject.CompareTag("Connector"))
@@ -33,32 +35,32 @@ namespace Assets.Classes
                 if (!edges.Contains(selectedObject))
                 {
                     edges.Add(selectedObject);
-                    HighlightObject(selectedObject);
+                    highlightObject(selectedObject);
                 }
                 else
                 {
                     edges.Remove(selectedObject);
-                    ResetObject(selectedObject);
+                    resetObject(selectedObject);
                 }
             }
         }
 
-        public void DeselectAll()
+        public void deselectAll()
         {
             foreach (GameObject node in nodes)
             {
-                ResetObject(node);
+                resetObject(node);
             }
             nodes.Clear();
 
             foreach (GameObject edge in edges)
             {
-                ResetObject(edge);
+                resetObject(edge);
             }
             edges.Clear();
         }
 
-        private void HighlightObject(GameObject obj)
+        private void highlightObject(GameObject obj)
         {
             if (obj.CompareTag("Vertex"))
             {
@@ -77,7 +79,7 @@ namespace Assets.Classes
             }
         }
 
-        private void ResetObject(GameObject obj)
+        private void resetObject(GameObject obj)
         {
             if (obj.CompareTag("Vertex"))
             {

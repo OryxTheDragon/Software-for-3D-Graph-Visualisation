@@ -13,6 +13,7 @@ namespace Assets.Classes
         public float rotationSpeed = 10.0f;
         public float maxYAngle = 90.0f;
         public float minYAngle = -90.0f;
+
         private Vector2 currentRotation;
         private bool isRotating = false;
 
@@ -100,8 +101,8 @@ namespace Assets.Classes
             }
 
             movement.Normalize();
-            transform.position += movement * movementSpeed * Time.deltaTime;
-            transform.position += Vector3.up * yAxis * movementSpeed * Time.deltaTime;
+            transform.position += movementSpeed * Time.deltaTime * movement;
+            transform.position += movementSpeed * Time.deltaTime * yAxis * Vector3.up;
 
         }
     }

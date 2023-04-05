@@ -4,7 +4,7 @@ namespace Assets.Scripts
 {
     public class ChangeColorByPosition : MonoBehaviour
     {
-        float maximumPosition = 500;
+        readonly float maximumPosition = 500;
         void Start()
         {
             Renderer renderer = GetComponent<Renderer>();

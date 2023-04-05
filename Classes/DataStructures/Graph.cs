@@ -71,7 +71,7 @@ namespace Assets.Classes.DataStructures
 
         public void loadGraphFromCSV(string filepath, bool overwrite)
         {
-            using (StreamReader reader = new StreamReader(filepath))
+            using (StreamReader reader = new(filepath))
             {
                 if (overwrite) {
                     this.nodes = new Treap<string, Node>();
@@ -201,5 +201,20 @@ namespace Assets.Classes.DataStructures
             }
         }
 
+        public float getScale()
+        {
+            float temp = 500.0f;
+            float curr = 0.0f;
+            foreach (Node node in getNodes()) {
+                for (int i = 0; i < 3; i++)
+                {
+                    curr = Mathf.Abs(node.getPosition()[i]);
+                    if (curr > temp) {
+                        temp = curr;
+                    }
+                }
+            }
+            return (temp + 50.0f);
+        }
     }
 }
