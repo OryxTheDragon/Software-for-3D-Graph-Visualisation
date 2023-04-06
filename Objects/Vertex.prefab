@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 4846730513110632059}
   - component: {fileID: 6660189606034483472}
   - component: {fileID: 7889477352591441817}
-  - component: {fileID: 2996819375087701203}
   - component: {fileID: 7040950487430299588}
   - component: {fileID: 2699187018464496403}
+  - component: {fileID: -2372086852203552874}
   m_Layer: 0
   m_Name: Vertex
   m_TagString: Vertex
@@ -91,19 +91,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &2996819375087701203
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5225428257518851890}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7040950487430299588
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128,3 +115,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1087c400eab08bc469d189276822985c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!135 &-2372086852203552874
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5225428257518851890}
+  m_Material: {fileID: 13400000, guid: fc8f31633df71cd4a9712493211de7fa, type: 2}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 70
+  m_Center: {x: 0, y: 0, z: 0}

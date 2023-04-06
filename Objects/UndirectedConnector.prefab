@@ -11,9 +11,25 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 3908435621517949294, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
+      propertyPath: m_Radius
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3908435621517949294, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
+      propertyPath: m_Center.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3908435621517949294, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
+      propertyPath: m_Center.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3908435621517949294, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 13400000, guid: fc8f31633df71cd4a9712493211de7fa, type: 2}
     - target: {fileID: 5975482577351263407, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
       propertyPath: m_Name
-      value: ConnectorOmniDirectional
+      value: UndirectedConnector
       objectReference: {fileID: 0}
     - target: {fileID: 6275487905613099076, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
       propertyPath: m_Materials.Array.data[0]

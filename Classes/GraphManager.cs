@@ -37,6 +37,8 @@ public class GraphManager : MonoBehaviour
     private int numOfNodes;
     private int numOfEdges;
 
+    //Data Manager:
+    private ObjectSelectionManager selectionManager;
 
     //UI References:
     // Data Management Resources:
@@ -48,8 +50,6 @@ public class GraphManager : MonoBehaviour
     public GameObject listCellPrefab;
     public GameObject NodeViewPort;
     public GameObject EdgeViewPort;
-
-    private ObjectSelectionManager selectionManager;
 
     void Start()
     {
@@ -85,7 +85,7 @@ public class GraphManager : MonoBehaviour
         GameObject newVertex = Instantiate(baseVertexModel, node.getPosition(), Quaternion.identity, graphParent.transform);
         ObjectID newNodeId = newVertex.GetComponent<ObjectID>();
         newNodeId._id = node.getNodeId();
-
+        newNodeId.scale = fieldSize;
         NodeGameObjects.insert(node.getNodeId(), newVertex);
         if (numOfNodes < OptimizationLimit)
         {
@@ -187,6 +187,14 @@ public class GraphManager : MonoBehaviour
             fieldSize = graph.getScale();
             numOfNodes = graph.getNumOfNodes();
             numOfEdges = graph.getNumOfEdges();
+            if (numOfNodes >= OptimizationLimit) 
+            {
+                NodeViewPort.transform.parent.GetChild(1).gameObject.SetActive(true);
+            }
+            if (numOfEdges >= OptimizationLimit)
+            {
+                EdgeViewPort.transform.parent.GetChild(1).gameObject.SetActive(true);
+            }
             DataManagementPanel.transform.GetChild(0).transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = Path.GetFileName(path);
             DataManagementPanel.transform.GetChild(0).transform.GetChild(4).GetComponent<TextMeshProUGUI>().color = new Color(0, 0.5f, 0, 1f);
             DataManagementPanel.transform.GetChild(0).transform.GetChild(7).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfNodes();
@@ -218,6 +226,9 @@ public class GraphManager : MonoBehaviour
 
     public void generateCube()
     {   
+        // The purpose of this functionality was the creation of a measuring device, so that the node and edge positions could be measured in real time.
+        // But sadly there isn't enough time to flesh it out. For now this method just creates a cube around the graph.
+        /*
         if (quadList.Count == 0)
         {
             GameObject North = Instantiate(quadPrefab, new Vector3(1f * fieldSize, 0, 0), Quaternion.Euler(0, 90.0f, 0), transform.GetChild(1));
@@ -261,9 +272,11 @@ public class GraphManager : MonoBehaviour
                 quad.transform.localScale = new Vector3(2 * fieldSize, 2 * fieldSize, 1);
             }
         }
+        */
     }
 
     public void clearTheField() {
+        selectionManager.deselectAll();
         foreach (GameObject edge in EdgeGameObjects)
         {
             Destroy(edge);
@@ -271,6 +284,14 @@ public class GraphManager : MonoBehaviour
         foreach (GameObject node in NodeGameObjects)
         {
             Destroy(node);
+        }
+        for (int i = NodeViewPort.transform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(NodeViewPort.transform.GetChild(i).gameObject);
+        }
+        for (int i = EdgeViewPort.transform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(EdgeViewPort.transform.GetChild(i).gameObject);
         }
     }
 }
