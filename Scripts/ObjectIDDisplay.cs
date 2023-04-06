@@ -48,14 +48,34 @@ public class ObjectIDDisplay : MonoBehaviour
             isDisplaying = false;
         }
     }
-
     void OnGUI()
+{
+    if (isDisplaying)
     {
-        if (isDisplaying)
-        {
-            GUI.skin.label.fontSize = 20;
-            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, 100, 50), objectID);
-        }
+        // Define the size and position of the window
+        Rect windowRect = new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, 100, 50);
+        
+        // Call the method to draw the window
+        windowRect = GUI.Window(0, windowRect, DrawWindow, "");
     }
+}
+
+void DrawWindow(int windowID)
+{
+    // Set the label style to red text
+    GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+    labelStyle.normal.textColor = Color.red;
+    Debug.Log("Label color: " + labelStyle.normal.textColor); // Check the color value
+
+    // Set the label properties
+    labelStyle.fontSize = 20;
+    labelStyle.alignment = TextAnchor.MiddleCenter;
+
+    // Draw the label with the object ID
+    GUI.Label(new Rect(0, 0, 100, 50), objectID, labelStyle);
+
+    // Make the window draggable
+    GUI.DragWindow();
+}
+
 }

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Assets.Classes.DataObjects;
 using System.IO;
+using UnityEngine.UIElements;
+using System.Linq;
+using UnityEngine.Networking.Types;
 
 namespace Assets.Classes.DataStructures
 {
@@ -10,27 +13,75 @@ namespace Assets.Classes.DataStructures
     {
         private Treap<string,Node> nodes;
         private Treap<string,Edge> edges;
+        private float scale = 500f;
+        private int numOfEdges;
+        private int numOfNodes;
 
         public Graph()
         {
             nodes = new Treap<string,Node>();
             edges = new Treap<string,Edge>();
+            numOfEdges = 0;
+            numOfNodes = 0;
         }
+        public float getScale() { return scale; }
+        public int getNumOfNodes() { return numOfNodes; }
+        public int getNumOfEdges() { return numOfEdges; }
 
-        public void createNode(string node_id)
+        public Node createNode(string node_id, Vector3? position)
         {
-            Node temp = new Node(node_id);
-            nodes.Insert(temp.getNodeId(),temp);
+            if (node_id != null)
+            {
+                if (position == null)
+                {
+                    return new Node(node_id);
+                }
+                else
+                {
+                    return new Node(node_id, position ?? Vector3.zero);
+                }
+            }
+            else
+            {
+                Console.Error.WriteLine("Attempted to create node failed because its ID did not exist. ");
+                return null;
+            }
+        }
+        public Edge createEdge(string edge_id, Node node1, Node node2, Direction direction)
+        {
+            if (edge_id != null && node1 != null && node2 != null)
+            {
+                return new Edge(edge_id, node1, node2, direction);
+            }
+            else {
+                Console.Error.WriteLine("Attempted to create edge failed because its ID or its nodes did not exist. ");
+                return null;
+            }
         }
 
         public void insertNode(Node node)
         {
-            nodes.Insert(node.getNodeId(),node);
+            if (!nodes.contains(node.getNodeId()))
+            {
+                nodes.insert(node.getNodeId(), node);
+            }
+            else
+            {
+                Console.Error.WriteLine("Node " + node.getNodeId() + " was attempted to be inserted into the structee already exists in the structure and therefore will not be inserted. ");
+            }
         }
 
         public void insertEdge(Edge edge)
         {
-            edges.Insert(edge.getEdgeId(),edge);
+            if (!edges.Contains(edge))
+            {
+                edges.insert(edge.getEdgeId(), edge);
+            }
+            else
+            {
+                Console.Error.WriteLine("Edge " + edge.getEdgeId() + " from node " + edge.getStartNode() + " to node " + edge.getEndNode()
+                    + " was attempted to be inserted into the structee already exists in the structure and therefore will not be inserted. ");
+            }
         }
 
         public void removeNode(Node node)
@@ -42,7 +93,7 @@ namespace Assets.Classes.DataStructures
                     removeEdge(edge);
                 }
             }
-            nodes.Remove(node.getNodeId());
+            nodes.remove(node.getNodeId());
         }
 
         public Node searchNodes(string node_id)
@@ -52,22 +103,10 @@ namespace Assets.Classes.DataStructures
 
         public void removeEdge(Edge edge)
         {
-            edges.Remove(edge.getEdgeId());
+            edges.remove(edge.getEdgeId());
         }
         public Treap<string, Edge> getEdges() { return edges; }
         public Treap<string, Node> getNodes() { return nodes; }
-
-        public void createEdge(string edge_id, Node node1, Node node2, Direction direction)
-        {
-            foreach (Edge edge in edges)
-            {
-                if (edge.getStartNode() == node1 && edge.getEndNode() == node2)
-                {
-                    return;
-                }
-            }
-            edges.Insert(edge_id, new Edge(edge_id, node1, node2, direction));
-        }
 
         public void loadGraphFromCSV(string filepath, bool overwrite)
         {
@@ -100,9 +139,9 @@ namespace Assets.Classes.DataStructures
                             Debug.LogErrorFormat("Invalid data format in line: {0}", line);
                             continue;
                         }
-                        Node node = new Node(nodeId);
-                        node.setPosition(posX, posY, posZ);
-                        insertNode(node);
+                        scale = Mathf.Max(posX, posY, posZ, scale);
+                        insertNode(createNode(nodeId,new Vector3(posX,posY,posZ)));
+                        numOfNodes++;
                     }
                     else if (values[0].Equals("E"))
                     {
@@ -129,9 +168,9 @@ namespace Assets.Classes.DataStructures
                             {
                                 direction = Direction.Directed;
                             }
-                            createEdge(edgeId, startNode, endNode, direction);
+                            insertEdge(createEdge(edgeId, startNode, endNode, direction));
+                            numOfEdges++;
                         }
-                        // TODO 3 value edges
                     }
                     else
                     {
@@ -154,12 +193,10 @@ namespace Assets.Classes.DataStructures
                     var line = reader.ReadLine();
                     var values = line.Split(';');
 
-                    // Create node from CSV data
                     if (values.Length >= 1)
                     {
                         string nodeId = values[0];
-                        Node node = new Node(nodeId);
-                        insertNode(node);
+                        insertNode(createNode(nodeId,null));
                     }
                 }
             }
@@ -173,15 +210,13 @@ namespace Assets.Classes.DataStructures
                     var line = reader.ReadLine();
                     var values = line.Split(';');
 
-                    // Create edge from CSV data
                     if (values.Length >= 3)
                     {
                         string edgeId = values[0];
                         string startNodeId = values[1];
                         string endNodeId = values[2];
-                        Direction direction = Direction.Undirected; // Default to undirected
+                        Direction direction = Direction.Undirected;
 
-                        // Parse direction if provided
                         if (values.Length >= 4 && Direction.TryParse(values[3], true, out Direction parsedDirection))
                         {
                             direction = parsedDirection;
@@ -190,31 +225,13 @@ namespace Assets.Classes.DataStructures
                         Node startNode = searchNodes(startNodeId);
                         Node endNode = searchNodes(endNodeId);
 
-                        // Create edge only if its nodes exist
                         if (startNode != null && endNode != null)
                         {
-                            Edge edge = new Edge(edgeId, startNode, endNode, direction);
-                            insertEdge(edge);
+                            insertEdge(createEdge(edgeId, startNode, endNode, direction));
                         }
                     }
                 }
             }
-        }
-
-        public float getScale()
-        {
-            float temp = 500.0f;
-            float curr = 0.0f;
-            foreach (Node node in getNodes()) {
-                for (int i = 0; i < 3; i++)
-                {
-                    curr = Mathf.Abs(node.getPosition()[i]);
-                    if (curr > temp) {
-                        temp = curr;
-                    }
-                }
-            }
-            return (temp + 50.0f);
         }
     }
 }

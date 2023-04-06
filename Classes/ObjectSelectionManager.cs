@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Classes
 {
@@ -7,7 +8,7 @@ namespace Assets.Classes
     {
         private readonly List<GameObject> nodes;
         private readonly List<GameObject> edges;
-        private readonly float intensity = 2.0f;
+        private readonly float intensity = 4.0f;
 
         public ObjectSelectionManager()
         {
@@ -15,7 +16,7 @@ namespace Assets.Classes
             edges = new List<GameObject>();
         }
 
-        public void selectObject(GameObject selectedObject)
+        public void selectObject(GameObject selectedObject, GameObject ListCell)
         {
             if (selectedObject.CompareTag("Vertex"))
             {
@@ -23,11 +24,13 @@ namespace Assets.Classes
                 {
                     nodes.Add(selectedObject);
                     highlightObject(selectedObject);
+                    ListCell.GetComponent<Button>().GetComponent<Image>().color = new Color(0.3f, 0.8f, 0.4f, 1f);
                 }
                 else
                 {
                     nodes.Remove(selectedObject);
                     resetObject(selectedObject);
+                    ListCell.GetComponent<Button>().GetComponent<Image>().color = Color.white;
                 }
             }
             else if (selectedObject.CompareTag("Connector"))
@@ -36,11 +39,13 @@ namespace Assets.Classes
                 {
                     edges.Add(selectedObject);
                     highlightObject(selectedObject);
+                    ListCell.GetComponent<Button>().GetComponent<Image>().color = new Color(0.3f, 0.8f, 0.4f, 1f);
                 }
                 else
                 {
                     edges.Remove(selectedObject);
                     resetObject(selectedObject);
+                    ListCell.GetComponent<Button>().GetComponent<Image>().color = Color.white;
                 }
             }
         }

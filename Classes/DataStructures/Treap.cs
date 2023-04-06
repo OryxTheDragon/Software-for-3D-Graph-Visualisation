@@ -19,7 +19,7 @@ namespace Assets.Classes.DataStructures
             public int Priority { get; set; }
             public TreapNode Left { get; set; }
             public TreapNode Right { get; set; }
-            public int CompareTo(TreapNode other)
+            public int compareTo(TreapNode other)
             {
                 return Key.CompareTo(other.Key);
             }
@@ -32,10 +32,10 @@ namespace Assets.Classes.DataStructures
             }
         }
 
-        private readonly Random _random = new Random();
+        private readonly Random _random = new();
         private TreapNode _root;
 
-        public void Insert(K key, T value)
+        public void insert(K key, T value)
         {
             _root = Insert(_root, value, key, _random.Next());
         }
@@ -69,7 +69,7 @@ namespace Assets.Classes.DataStructures
             return tNode;
         }
 
-        public bool Remove(K key)
+        public bool remove(K key)
         {
             if (Find(_root, key) == null)
             {
@@ -80,6 +80,9 @@ namespace Assets.Classes.DataStructures
             return true;
         }
 
+        public bool isEmpty() {
+            return _root == null;
+        }
 
         private TreapNode Remove(TreapNode tNode, K key)
         {
@@ -113,7 +116,7 @@ namespace Assets.Classes.DataStructures
             return tNode;
         }
 
-        public bool Contains(K key)
+        public bool contains(K key)
         {
             return Find(_root, key) != null;
         }

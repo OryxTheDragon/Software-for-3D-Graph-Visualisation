@@ -17,14 +17,13 @@ public class UserInterfaceController : MonoBehaviour
         canvasEnabled = true;
         canvas.enabled = canvasEnabled;
 
-        // Enable NodeScrollView and disable EdgeScrollView on startup
         nodeScrollView.gameObject.SetActive(true);
         edgeScrollView.gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        // Toggle between NodeScrollView and EdgeScrollView when TAB is pressed
+
         if (Input.GetKeyDown(KeyCode.LeftAlt))
         {
             isNodeScrollViewActive = !isNodeScrollViewActive;

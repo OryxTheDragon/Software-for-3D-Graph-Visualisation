@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Assets.Classes
 {
-    class UITabSystem  : MonoBehaviour 
+    class UITabSystem : MonoBehaviour
     {
         public GameObject[] tabPages;
         public Button[] tabButtons;
@@ -14,9 +14,8 @@ namespace Assets.Classes
             showPage(currentPageIndex);
         }
 
-        public void showPage(int index){
-
-            // Hide all pages except the current one
+        public void showPage(int index)
+        {
             for (int i = 0; i < tabPages.Length; i++)
             {
                 if (i == index)

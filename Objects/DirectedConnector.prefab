@@ -86,7 +86,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5975482577351263407, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
       propertyPath: m_Name
-      value: ConnectorStartToEnd
+      value: DirectedConnector
       objectReference: {fileID: 0}
     - target: {fileID: 6275487905613099076, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -209,7 +209,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: a50f6976529aa2d43b62f3c5cb93fd3b, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 42fafae724b55bf408d014448479b1dd, type: 2}
+      objectReference: {fileID: 2100000, guid: 42dce2842ed8a814893de8936c4cd261, type: 2}
     - target: {fileID: 919132149155446097, guid: a50f6976529aa2d43b62f3c5cb93fd3b, type: 3}
       propertyPath: m_Name
       value: Cone (1)

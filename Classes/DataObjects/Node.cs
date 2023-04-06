@@ -16,6 +16,12 @@ namespace Assets.Classes.DataObjects
             this.NodeColor = Color.white;
             this.node_id = node_id; 
         }
+        public Node(string node_id, Vector3 position)
+        {
+            this.position = position;
+            this.NodeColor = Color.white;
+            this.node_id = node_id;
+        }
         public string getNodeId() { return node_id; }
         
         public Color getNodeColor() { return NodeColor; }
