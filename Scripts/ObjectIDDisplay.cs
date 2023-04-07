@@ -1,5 +1,7 @@
 ﻿using Assets.Scripts;
+using System.Linq;
 using UnityEngine;
+using static UnityEngine.Mathf;
 
 public class ObjectIDDisplay : MonoBehaviour
 {
@@ -8,6 +10,8 @@ public class ObjectIDDisplay : MonoBehaviour
 
     private bool isDisplaying = false; // Whether the GUI window is currently being displayed
     private string objectID = ""; // The ID of the object being displayed
+    private string content = "";
+    RaycastHit lastHit;
 
     void Update()
     {
@@ -18,11 +22,10 @@ public class ObjectIDDisplay : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 
         // Detect the object that the ray intersects with
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit))
+        if (Physics.Raycast(ray, out lastHit))
         {
             // Check if the object has an ID
-            ObjectID objectIDComponent = hit.collider.GetComponent<ObjectID>();
+            ObjectID objectIDComponent = lastHit.collider.GetComponent<ObjectID>();
             if (objectIDComponent != null)
             {
                 // Start or continue the hover timer
@@ -32,6 +35,10 @@ public class ObjectIDDisplay : MonoBehaviour
                 if (hoverTimer >= hoverTime)
                 {
                     objectID = objectIDComponent._id;
+                    content = "ID: " + objectID + "\n" +
+                "x: " + lastHit.transform.position.x.ToString("F0") + "\n" +
+                "y: " + lastHit.transform.position.y.ToString("F0") + "\n" +
+                "z: " + lastHit.transform.position.z.ToString("F0");
                     isDisplaying = true;
                 }
             }
@@ -48,32 +55,25 @@ public class ObjectIDDisplay : MonoBehaviour
         }
     }
     void OnGUI()
-{
-    if (isDisplaying)
     {
-        // Define the size and position of the window
-        Rect windowRect = new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, 100, 50);
-        
-        // Call the method to draw the window
-        windowRect = GUI.Window(0, windowRect, DrawWindow, "");
+        if (isDisplaying)
+        {
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+            labelStyle.fontSize = 15;
+            GUIContent labelContent = new GUIContent(content);
+            Vector2 labelSize = labelStyle.CalcSize(labelContent);
+            Rect windowRect = new Rect(
+                Input.mousePosition.x + 15f,
+                Screen.height - Input.mousePosition.y,
+                labelSize.x + 20f,
+                labelSize.y + 20f);
+            windowRect = GUI.Window(0, windowRect, DrawWindow, labelContent, labelStyle);
+        }
     }
-}
 
-void DrawWindow(int windowID)
-{
-    // Set the label style to red text
-    GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
-    labelStyle.normal.textColor = Color.red;
-
-    // Set the label properties
-    labelStyle.fontSize = 20;
-    labelStyle.alignment = TextAnchor.MiddleCenter;
-
-    // Draw the label with the object ID
-    GUI.Label(new Rect(0, 0, 100, 50), objectID, labelStyle);
-
-    // Make the window draggable
-    GUI.DragWindow();
-}
+    void DrawWindow(int windowID)
+    {;
+        GUI.DragWindow();
+    }
 
 }

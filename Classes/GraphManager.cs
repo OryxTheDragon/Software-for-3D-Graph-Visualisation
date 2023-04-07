@@ -59,6 +59,7 @@ public class GraphManager : MonoBehaviour
     public Slider sliderDamper;
     public Slider sliderMinDistance;
     public Slider sliderMaxDistance;
+    public Slider sliderColliderRadius;
 
     void Start()
     {
@@ -122,6 +123,8 @@ public class GraphManager : MonoBehaviour
         connector.GetComponent<DynamicEdgeTransformation>().startNode = NodeGameObjects.getTNode(edge.getStartNode().getNodeId()).transform;
         connector.GetComponent<DynamicEdgeTransformation>().endNode = NodeGameObjects.getTNode(edge.getEndNode().getNodeId()).transform;
         SpringJoint springJoint = connector.GetComponent<DynamicEdgeTransformation>().startNode.gameObject.AddComponent<SpringJoint>();
+        springJoint.connectedBody = connector.GetComponent<DynamicEdgeTransformation>().endNode.GetComponent<Rigidbody>();
+        //springJoint.anchor = connector.GetComponent<DynamicEdgeTransformation>().endNode.transform.position;
         springJoint.enableCollision = true;
         SpringJointList[counter - 1] = springJoint;
         EdgeGameObjects.insert(edge.getEdgeId(), connector);
@@ -214,10 +217,12 @@ public class GraphManager : MonoBehaviour
         sliderMinDistance.maxValue = fieldSize;
         sliderSpring.maxValue = 1000; 
         sliderDamper.maxValue = 100;
+        sliderColliderRadius.maxValue = 100;
         sliderMaxDistance.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderMaxDistance.maxValue;
         sliderMinDistance.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderMinDistance.maxValue;
         sliderSpring.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderSpring.maxValue;
         sliderDamper.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderDamper.maxValue;
+        sliderColliderRadius.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderColliderRadius.maxValue;
     }
 
     public void toggleLoadingScreen(bool on)
@@ -368,6 +373,13 @@ public class GraphManager : MonoBehaviour
         foreach (SpringJoint joint in SpringJointList)
         {
             joint.minDistance = sliderMaxDistance.value;
+        }
+    }
+    public void physicsNodeCollisionSphereSize()
+    {
+        foreach (GameObject node in NodeGameObjects)
+        {
+            node.GetComponent<SphereCollider>().radius = sliderColliderRadius.value;
         }
     }
 
