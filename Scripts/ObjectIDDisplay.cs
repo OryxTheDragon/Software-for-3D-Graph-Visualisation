@@ -22,7 +22,6 @@ public class ObjectIDDisplay : MonoBehaviour
         if (Physics.Raycast(ray, out hit))
         {
             // Check if the object has an ID
-
             ObjectID objectIDComponent = hit.collider.GetComponent<ObjectID>();
             if (objectIDComponent != null)
             {
@@ -65,7 +64,6 @@ void DrawWindow(int windowID)
     // Set the label style to red text
     GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
     labelStyle.normal.textColor = Color.red;
-    Debug.Log("Label color: " + labelStyle.normal.textColor); // Check the color value
 
     // Set the label properties
     labelStyle.fontSize = 20;

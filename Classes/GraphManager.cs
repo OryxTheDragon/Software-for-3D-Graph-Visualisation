@@ -2,6 +2,8 @@ using Assets.Classes;
 using Assets.Classes.DataObjects;
 using Assets.Classes.DataStructures;
 using Assets.Scripts;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
@@ -51,10 +53,18 @@ public class GraphManager : MonoBehaviour
     public GameObject NodeViewPort;
     public GameObject EdgeViewPort;
 
+    // Physics and Statistics Resources:
+    public SpringJoint[] SpringJointList;
+    public Slider sliderSpring;
+    public Slider sliderDamper;
+    public Slider sliderMinDistance;
+    public Slider sliderMaxDistance;
+
     void Start()
     {
         if (Application.isPlaying)
         {
+            Physics.autoSimulation = false;
             graph = new Graph();
             selectionManager = new ObjectSelectionManager();
         }
@@ -65,7 +75,6 @@ public class GraphManager : MonoBehaviour
         NodeGameObjects = new Treap<string, GameObject>();
         EdgeGameObjects = new Treap<string, GameObject>();
         int counter = 1;
-
         foreach (Node node in graph.getNodes())
         {
             createNodeGameObject(node, counter);
@@ -86,6 +95,7 @@ public class GraphManager : MonoBehaviour
         ObjectID newNodeId = newVertex.GetComponent<ObjectID>();
         newNodeId._id = node.getNodeId();
         newNodeId.scale = fieldSize;
+        newVertex.transform.localScale = newVertex.transform.localScale * Min(15,fieldSize,numOfNodes);
         NodeGameObjects.insert(node.getNodeId(), newVertex);
         if (numOfNodes < OptimizationLimit)
         {
@@ -95,31 +105,25 @@ public class GraphManager : MonoBehaviour
 
     private void createEdgeGameObject(Edge edge, int counter)
     {
-        float x = (edge.getEndNode().getPosition().x - edge.getStartNode().getPosition().x);
-        float y = (edge.getEndNode().getPosition().y - edge.getStartNode().getPosition().y);
-        float z = (edge.getEndNode().getPosition().z - edge.getStartNode().getPosition().z);
-        float length = Sqrt((x * x) + (y * y) + (z * z)) / 4;
-        Vector3 scale = new(baseEdgeModel.transform.localScale.x, length, baseEdgeModel.transform.localScale.z);
-        Vector3 position = ((edge.getStartNode().getPosition() + edge.getEndNode().getPosition()) / 2);
-        Quaternion rotation = Quaternion.FromToRotation(
-            Vector3.up,
-            edge.getEndNode().getPosition() - edge.getStartNode().getPosition());
-
         GameObject connector;
         if (edge.getDirection() == Direction.Undirected)
         {
-            connector = Instantiate(UndirectedConnector, position, rotation, graphParent.transform);
+            connector = Instantiate(UndirectedConnector, graphParent.transform);
         }
         else if (edge.getDirection() == Direction.Directed)
         {
-            connector = Instantiate(DirectedConnector, position, rotation, graphParent.transform);
+            connector = Instantiate(DirectedConnector, graphParent.transform);
         }
         else
         {
-            connector = Instantiate(baseEdgeModel, position, rotation, graphParent.transform);
+            connector = Instantiate(baseEdgeModel, graphParent.transform);
         }
-        connector.transform.localScale = scale;
 
+        connector.GetComponent<DynamicEdgeTransformation>().startNode = NodeGameObjects.getTNode(edge.getStartNode().getNodeId()).transform;
+        connector.GetComponent<DynamicEdgeTransformation>().endNode = NodeGameObjects.getTNode(edge.getEndNode().getNodeId()).transform;
+        SpringJoint springJoint = connector.GetComponent<DynamicEdgeTransformation>().startNode.gameObject.AddComponent<SpringJoint>();
+        springJoint.enableCollision = true;
+        SpringJointList[counter - 1] = springJoint;
         EdgeGameObjects.insert(edge.getEdgeId(), connector);
         ObjectID newEdgeId = connector.GetComponent<ObjectID>();
         newEdgeId._id = edge.getEdgeId();
@@ -161,7 +165,6 @@ public class GraphManager : MonoBehaviour
         GameObject selectedNode = NodeGameObjects.getTNode(node_id);
         selectionManager.selectObject(selectedNode, cell);
     }
-
     public void selectFileForImport()
     {
         if (overrideLoadedData)
@@ -183,11 +186,11 @@ public class GraphManager : MonoBehaviour
         string path = EditorUtility.OpenFilePanel("Select a File", "", string.Join(",", fileExtensions));
         if (File.Exists(path))
         {
-            graph.loadGraphFromCSV(path, false);
+            loadGraphFromCSV(path, false);
             fieldSize = graph.getScale();
             numOfNodes = graph.getNumOfNodes();
             numOfEdges = graph.getNumOfEdges();
-            if (numOfNodes >= OptimizationLimit) 
+            if (numOfNodes >= OptimizationLimit)
             {
                 NodeViewPort.transform.parent.GetChild(1).gameObject.SetActive(true);
             }
@@ -195,11 +198,31 @@ public class GraphManager : MonoBehaviour
             {
                 EdgeViewPort.transform.parent.GetChild(1).gameObject.SetActive(true);
             }
-            DataManagementPanel.transform.GetChild(0).transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = Path.GetFileName(path);
-            DataManagementPanel.transform.GetChild(0).transform.GetChild(4).GetComponent<TextMeshProUGUI>().color = new Color(0, 0.5f, 0, 1f);
-            DataManagementPanel.transform.GetChild(0).transform.GetChild(7).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfNodes();
-            DataManagementPanel.transform.GetChild(0).transform.GetChild(8).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfEdges();
+            Transform DataManagementRect = DataManagementPanel.transform.GetChild(0).transform;
+            DataManagementRect.GetChild(4).GetComponent<TextMeshProUGUI>().text = Path.GetFileName(path);
+            DataManagementRect.GetChild(4).GetComponent<TextMeshProUGUI>().color = new Color(0, 0.5f, 0, 1f);
+            DataManagementRect.GetChild(7).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfNodes();
+            DataManagementRect.GetChild(8).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfEdges();
+            SpringJointList = new SpringJoint[numOfEdges];
+            InitializeSliderMaxValues();
         }
+    }
+
+    private void InitializeSliderMaxValues()
+    {
+        sliderMaxDistance.maxValue = fieldSize;
+        sliderMinDistance.maxValue = fieldSize;
+        sliderSpring.maxValue = 1000; 
+        sliderDamper.maxValue = 100;
+        sliderMaxDistance.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderMaxDistance.maxValue;
+        sliderMinDistance.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderMinDistance.maxValue;
+        sliderSpring.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderSpring.maxValue;
+        sliderDamper.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderDamper.maxValue;
+    }
+
+    public void toggleLoadingScreen(bool on)
+    {
+        DataManagementPanel.transform.GetChild(1).gameObject.SetActive(on);
     }
 
     public void exportToCSV()
@@ -224,58 +247,79 @@ public class GraphManager : MonoBehaviour
         exportedFile.Close();
     }
 
-    public void generateCube()
-    {   
-        // The purpose of this functionality was the creation of a measuring device, so that the node and edge positions could be measured in real time.
-        // But sadly there isn't enough time to flesh it out. For now this method just creates a cube around the graph.
-        /*
-        if (quadList.Count == 0)
+    public void loadGraphFromCSV(string filepath, bool overwrite)
+    {
+        using (StreamReader reader = new(filepath))
         {
-            GameObject North = Instantiate(quadPrefab, new Vector3(1f * fieldSize, 0, 0), Quaternion.Euler(0, 90.0f, 0), transform.GetChild(1));
-            GameObject West = Instantiate(quadPrefab, new Vector3(0, 0, 1f * fieldSize), Quaternion.Euler(0, 0, 0), transform.GetChild(1));
-            GameObject East = Instantiate(quadPrefab, new Vector3(0, 0, -1f * fieldSize), Quaternion.Euler(0, 180.0f, 0), transform.GetChild(1));
-            GameObject South = Instantiate(quadPrefab, new Vector3(-1f * fieldSize, 0, 0), Quaternion.Euler(0, -90.0f, 0), transform.GetChild(1));
-            GameObject Top = Instantiate(quadPrefab, new Vector3(0, 1f * fieldSize, 0), Quaternion.Euler(-90.0f, 0, 0), transform.GetChild(1));
-            GameObject Bottom = Instantiate(quadPrefab, new Vector3(0, -1f * fieldSize, 0), Quaternion.Euler(90.0f, 0, 0), transform.GetChild(1));
-
-            North.name = "NorthQuadWall";
-            West.name = "WestQuadWall";
-            East.name = "EastQuadWall";
-            South.name = "SouthQuadWall";
-            Top.name = "TopQuadWall";
-            Bottom.name = "BottomQuadWall";
-
-            quadList.Add(North);
-            quadList.Add(West);
-            quadList.Add(East);
-            quadList.Add(South);
-            quadList.Add(Top);
-            quadList.Add(Bottom);
-
-            foreach (GameObject quad in quadList)
+            if (overwrite)
             {
-                quad.transform.parent = transform;
-                quad.transform.localScale = new Vector3(2 * fieldSize, 2 * fieldSize, 1);
+                graph = new Graph();
+            }
+            while (!reader.EndOfStream)
+            {
+                string line = reader.ReadLine();
+                string[] values = line.Split(';');
+                if (values.Length < 2)
+                {
+                    Debug.LogErrorFormat("Invalid data format in line: {0}", line);
+                    continue;
+                }
+                if (values[0].Equals("N"))
+                {
+                    if (values.Length != 5)
+                    {
+                        Debug.LogErrorFormat("Invalid data format in line: {0}", line);
+                        continue;
+                    }
+                    string nodeId = values[1];
+                    float posX, posY, posZ;
+                    if (!float.TryParse(values[2], out posX) || !float.TryParse(values[3], out posY) || !float.TryParse(values[4], out posZ))
+                    {
+                        Debug.LogErrorFormat("Invalid data format in line: {0}", line);
+                        continue;
+                    }
+                    graph.setScale(Max(posX, posY, posZ, graph.getScale()));
+                    graph.insertNode(graph.createNode(nodeId, new Vector3(posX, posY, posZ)));
+                }
+                else if (values[0].Equals("E"))
+                {
+                    if (values.Length > 5 || values.Length < 3)
+                    {
+                        Debug.LogErrorFormat("Invalid data format in line: {0}", line);
+                        continue;
+                    }
+                    else if (values.Length == 5)
+                    {
+                        string edgeId = values[1];
+                        Node startNode = graph.getNodes().getTNode(values[2]);
+                        Node endNode = graph.getNodes().getTNode(values[3]);
+                        if (startNode == null || endNode == null)
+                        {
+                            Debug.LogErrorFormat("Invalid data format in line: {0}", line);
+                            continue;
+                        }
+                        Direction direction = Direction.Undirected;
+                        if (values.Length == 5 && values[4].Equals("0"))
+                        {
+                            direction = Direction.Undirected;
+                        }
+                        if (values.Length == 5 && values[4].Equals("1"))
+                        {
+                            direction = Direction.Directed;
+                        }
+                        graph.insertEdge(graph.createEdge(edgeId, startNode, endNode, direction));
+                    }
+                }
+                else
+                {
+                    Debug.LogErrorFormat("Invalid data format in line: {0}", line);
+                    continue;
+                }
             }
         }
-        else
-        {
-            quadList[0].transform.position = new Vector3(1f * fieldSize, 0, 0);
-            quadList[1].transform.position = new Vector3(0, 0, 1f * fieldSize);
-            quadList[2].transform.position = new Vector3(0, 0, -1f * fieldSize);
-            quadList[3].transform.position = new Vector3(-1f * fieldSize, 0, 0);
-            quadList[4].transform.position = new Vector3(0, 1f * fieldSize, 0);
-            quadList[5].transform.position = new Vector3(0, -1f * fieldSize, 0);
-            foreach (GameObject quad in quadList)
-            {
-                quad.SetActive(true);
-                quad.transform.localScale = new Vector3(2 * fieldSize, 2 * fieldSize, 1);
-            }
-        }
-        */
     }
-
-    public void clearTheField() {
+    public void clearTheField()
+    {
         selectionManager.deselectAll();
         foreach (GameObject edge in EdgeGameObjects)
         {
@@ -294,4 +338,89 @@ public class GraphManager : MonoBehaviour
             Destroy(EdgeViewPort.transform.GetChild(i).gameObject);
         }
     }
+
+
+
+    public void physicsJointSpringChange()
+    {
+        foreach (SpringJoint joint in SpringJointList)
+        {
+            joint.spring = sliderSpring.value;
+        }
+
+    }
+    public void physicsJointDamperChange()
+    {
+        foreach (SpringJoint joint in SpringJointList)
+        {
+            joint.damper = sliderDamper.value;
+        }
+    }
+    public void physicsJointMinDistanceChange()
+    {
+        foreach (SpringJoint joint in SpringJointList)
+        {
+            joint.maxDistance = sliderMinDistance.value;
+        }
+    }
+    public void physicsJointMaxDistanceChange()
+    {
+        foreach (SpringJoint joint in SpringJointList)
+        {
+            joint.minDistance = sliderMaxDistance.value;
+        }
+    }
+
+
+
+    /*
+public void generateCube()
+{   
+    // The purpose of this functionality was the creation of a measuring device, so that the node and edge positions could be measured in real time.
+    // But sadly there isn't enough time to flesh it out. For now this method just creates a cube around the graph.
+    if (quadList.Count == 0)
+    {
+        GameObject North = Instantiate(quadPrefab, new Vector3(1f * fieldSize, 0, 0), Quaternion.Euler(0, 90.0f, 0), transform.GetChild(1));
+        GameObject West = Instantiate(quadPrefab, new Vector3(0, 0, 1f * fieldSize), Quaternion.Euler(0, 0, 0), transform.GetChild(1));
+        GameObject East = Instantiate(quadPrefab, new Vector3(0, 0, -1f * fieldSize), Quaternion.Euler(0, 180.0f, 0), transform.GetChild(1));
+        GameObject South = Instantiate(quadPrefab, new Vector3(-1f * fieldSize, 0, 0), Quaternion.Euler(0, -90.0f, 0), transform.GetChild(1));
+        GameObject Top = Instantiate(quadPrefab, new Vector3(0, 1f * fieldSize, 0), Quaternion.Euler(-90.0f, 0, 0), transform.GetChild(1));
+        GameObject Bottom = Instantiate(quadPrefab, new Vector3(0, -1f * fieldSize, 0), Quaternion.Euler(90.0f, 0, 0), transform.GetChild(1));
+
+        North.name = "NorthQuadWall";
+        West.name = "WestQuadWall";
+        East.name = "EastQuadWall";
+        South.name = "SouthQuadWall";
+        Top.name = "TopQuadWall";
+        Bottom.name = "BottomQuadWall";
+
+        quadList.Add(North);
+        quadList.Add(West);
+        quadList.Add(East);
+        quadList.Add(South);
+        quadList.Add(Top);
+        quadList.Add(Bottom);
+
+        foreach (GameObject quad in quadList)
+        {
+            quad.transform.parent = transform;
+            quad.transform.localScale = new Vector3(2 * fieldSize, 2 * fieldSize, 1);
+        }
+    }
+    else
+    {
+        quadList[0].transform.position = new Vector3(1f * fieldSize, 0, 0);
+        quadList[1].transform.position = new Vector3(0, 0, 1f * fieldSize);
+        quadList[2].transform.position = new Vector3(0, 0, -1f * fieldSize);
+        quadList[3].transform.position = new Vector3(-1f * fieldSize, 0, 0);
+        quadList[4].transform.position = new Vector3(0, 1f * fieldSize, 0);
+        quadList[5].transform.position = new Vector3(0, -1f * fieldSize, 0);
+        foreach (GameObject quad in quadList)
+        {
+            quad.SetActive(true);
+            quad.transform.localScale = new Vector3(2 * fieldSize, 2 * fieldSize, 1);
+        }
+    }
+}
+    */
 }

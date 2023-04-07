@@ -6,25 +6,27 @@ using System.IO;
 using UnityEngine.UIElements;
 using System.Linq;
 using UnityEngine.Networking.Types;
+using System.Collections;
 
 namespace Assets.Classes.DataStructures
 {
     public class Graph
     {
-        private Treap<string,Node> nodes;
-        private Treap<string,Edge> edges;
+        private Treap<string, Node> nodes;
+        private Treap<string, Edge> edges;
         private float scale = 500f;
         private int numOfEdges;
         private int numOfNodes;
 
         public Graph()
         {
-            nodes = new Treap<string,Node>();
-            edges = new Treap<string,Edge>();
+            nodes = new Treap<string, Node>();
+            edges = new Treap<string, Edge>();
             numOfEdges = 0;
             numOfNodes = 0;
         }
         public float getScale() { return scale; }
+        public void setScale(float scale) { this.scale = scale; }
         public int getNumOfNodes() { return numOfNodes; }
         public int getNumOfEdges() { return numOfEdges; }
 
@@ -53,7 +55,8 @@ namespace Assets.Classes.DataStructures
             {
                 return new Edge(edge_id, node1, node2, direction);
             }
-            else {
+            else
+            {
                 Console.Error.WriteLine("Attempted to create edge failed because its ID or its nodes did not exist. ");
                 return null;
             }
@@ -64,6 +67,7 @@ namespace Assets.Classes.DataStructures
             if (!nodes.contains(node.getNodeId()))
             {
                 nodes.insert(node.getNodeId(), node);
+                numOfNodes++;
             }
             else
             {
@@ -76,6 +80,7 @@ namespace Assets.Classes.DataStructures
             if (!edges.Contains(edge))
             {
                 edges.insert(edge.getEdgeId(), edge);
+                numOfEdges++;
             }
             else
             {
@@ -108,83 +113,11 @@ namespace Assets.Classes.DataStructures
         public Treap<string, Edge> getEdges() { return edges; }
         public Treap<string, Node> getNodes() { return nodes; }
 
-        public void loadGraphFromCSV(string filepath, bool overwrite)
-        {
-            using (StreamReader reader = new(filepath))
-            {
-                if (overwrite) {
-                    this.nodes = new Treap<string, Node>();
-                    this.edges = new Treap<string, Edge>();
-                }
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] values = line.Split(';');
-                    if (values.Length < 2)
-                    {
-                        Debug.LogErrorFormat("Invalid data format in line: {0}", line);
-                        continue;
-                    }
-                    if (values[0].Equals("N"))
-                    {
-                        if (values.Length != 5)
-                        {
-                            Debug.LogErrorFormat("Invalid data format in line: {0}", line);
-                            continue;
-                        }
-                        string nodeId = values[1];
-                        float posX, posY, posZ;
-                        if (!float.TryParse(values[2], out posX) || !float.TryParse(values[3], out posY) || !float.TryParse(values[4], out posZ))
-                        {
-                            Debug.LogErrorFormat("Invalid data format in line: {0}", line);
-                            continue;
-                        }
-                        scale = Mathf.Max(posX, posY, posZ, scale);
-                        insertNode(createNode(nodeId,new Vector3(posX,posY,posZ)));
-                        numOfNodes++;
-                    }
-                    else if (values[0].Equals("E"))
-                    {
-                        if (values.Length > 5 || values.Length < 3)
-                        {
-                            Debug.LogErrorFormat("Invalid data format in line: {0}", line);
-                            continue;
-                        }
-                        else if (values.Length == 5) {
-                            string edgeId = values[1];
-                            Node startNode = searchNodes(values[2]);
-                            Node endNode = searchNodes(values[3]);
-                            if (startNode == null || endNode == null)
-                            {
-                                Debug.LogErrorFormat("Invalid data format in line: {0}", line);
-                                continue;
-                            }
-                            Direction direction = Direction.Undirected;
-                            if (values.Length == 5 && values[4].Equals("0"))
-                            {
-                                direction = Direction.Undirected;
-                            }
-                            if (values.Length == 5 && values[4].Equals("1"))
-                            {
-                                direction = Direction.Directed;
-                            }
-                            insertEdge(createEdge(edgeId, startNode, endNode, direction));
-                            numOfEdges++;
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogErrorFormat("Invalid data format in line: {0}", line);
-                        continue;
-                    }
-                }
-            }
-        }
         public void readNodesFromCSV(string filePath, bool overwrite)
         {
             if (overwrite)
             {
-                this.nodes = new Treap<string,Node>();
+                this.nodes = new Treap<string, Node>();
             }
             using (var reader = new StreamReader(filePath))
             {
@@ -196,7 +129,7 @@ namespace Assets.Classes.DataStructures
                     if (values.Length >= 1)
                     {
                         string nodeId = values[0];
-                        insertNode(createNode(nodeId,null));
+                        insertNode(createNode(nodeId, null));
                     }
                 }
             }

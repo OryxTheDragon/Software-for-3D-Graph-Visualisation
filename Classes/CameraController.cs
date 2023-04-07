@@ -7,6 +7,7 @@ namespace Assets.Classes
         public Transform anchorPoint;
 
         public float movementSpeed = 1.0f;
+        public bool OmegaBoost = false;
         public bool speedBoost = false;
         public bool speedSink = false;
 
@@ -74,7 +75,8 @@ namespace Assets.Classes
             {
                 speedBoost = true;
             }
-            else if (Input.GetKeyUp(KeyCode.LeftShift)) {
+            else if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
                 speedBoost = false;
             }
 
@@ -87,9 +89,25 @@ namespace Assets.Classes
                 speedSink = false;
             }
 
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                OmegaBoost = true;
+            }
+            else if (Input.GetKeyUp(KeyCode.E))
+            {
+                OmegaBoost = false;
+            }
+
             if (speedBoost)
             {
-                movementSpeed = 1000.0f;
+                if (OmegaBoost)
+                {
+                    movementSpeed = 10000.0f;
+                }
+                else
+                {
+                    movementSpeed = 1000.0f;
+                }
             }
             else if (speedSink)
             {
