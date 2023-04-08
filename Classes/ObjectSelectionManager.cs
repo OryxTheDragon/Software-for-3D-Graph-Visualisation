@@ -16,6 +16,9 @@ namespace Assets.Classes
             edges = new List<GameObject>();
         }
 
+        public List<GameObject> getNodes() { return nodes; }
+        public List<GameObject> getEdges() { return edges; }
+
         public void selectObject(GameObject selectedObject, GameObject ListCell)
         {
             if (selectedObject.CompareTag("Vertex"))
