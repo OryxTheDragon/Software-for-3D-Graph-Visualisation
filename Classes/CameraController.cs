@@ -11,13 +11,13 @@ namespace Assets.Classes
         public Transform anchorPoint;
 
         public float movementSpeed = 1.0f;
-        public bool OmegaBoost = false;
-        public bool speedBoost = false;
-        public bool speedSink = false;
+        private bool OmegaBoost = false;
+        private bool speedBoost = false;
+        private bool speedSink = false;
 
         public float rotationSpeed = 10.0f;
-        public float maxYAngle = 90.0f;
-        public float minYAngle = -90.0f;
+        private float maxYAngle = 90.0f;
+        private float minYAngle = -90.0f;
 
         private Vector2 currentRotation;
         private float currentRotationZ;

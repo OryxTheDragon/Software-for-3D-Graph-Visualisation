@@ -5,10 +5,13 @@ using Assets.Scripts;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using Button = UnityEngine.UI.Button;
 using static UnityEngine.Mathf;
+using System.Windows.Forms;
+using Application = UnityEngine.Application;
+using UnityEditor;
 
 public class GraphManager : MonoBehaviour
 {
@@ -41,10 +44,10 @@ public class GraphManager : MonoBehaviour
     private Camera mainCamera;
 
     //UI References:
+    public GameObject canvas;
     // Data Management Resources:
     public GameObject[] tabPages;
     public Button[] tabButtons;
-    public GameObject DataManagementPanel;
 
     // Data Lab Resources:
     public GameObject listCellPrefab;
@@ -69,6 +72,26 @@ public class GraphManager : MonoBehaviour
             mainCamera = Camera.main;
             mainCamera.GetComponent<CameraController>().selectionManager = selectionManager;
         }
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            setQuitPanelActive(true);
+        }
+    }
+
+    public void setQuitPanelActive(bool on)
+    {
+        canvas.transform.GetChild(5).gameObject.SetActive(on);
+    }
+
+    public void quitApplication()
+    {
+    #if UNITY_EDITOR
+        EditorApplication.ExitPlaymode();
+    #endif
+        Application.Quit();
     }
 
     public void instantiateGraph()
@@ -124,7 +147,6 @@ public class GraphManager : MonoBehaviour
         connector.GetComponent<DynamicEdgeTransformation>().endNode = NodeGameObjects.getTNode(edge.getEndNode().getNodeId()).transform;
         SpringJoint springJoint = connector.GetComponent<DynamicEdgeTransformation>().startNode.gameObject.AddComponent<SpringJoint>();
         springJoint.connectedBody = connector.GetComponent<DynamicEdgeTransformation>().endNode.GetComponent<Rigidbody>();
-        //springJoint.anchor = connector.GetComponent<DynamicEdgeTransformation>().endNode.transform.position;
         springJoint.enableCollision = true;
         SpringJointList[counter - 1] = springJoint;
         EdgeGameObjects.insert(edge.getEdgeId(), connector);
@@ -185,10 +207,13 @@ public class GraphManager : MonoBehaviour
                 selectionManager = new ObjectSelectionManager();
             }
         }
-        string[] fileExtensions = { "csv" };
-        string path = EditorUtility.OpenFilePanel("Select a File", "", string.Join(",", fileExtensions));
-        if (File.Exists(path))
+        OpenFileDialog openFileDialog = new OpenFileDialog();
+        openFileDialog.Filter = "CSV files (*.csv)|*.csv";
+        openFileDialog.FilterIndex = 0;
+        openFileDialog.RestoreDirectory = true;
+        if (openFileDialog.ShowDialog() == DialogResult.OK)
         {
+            string path = openFileDialog.FileName;
             loadGraphFromCSV(path, false);
             fieldSize = graph.getScale();
             numOfNodes = graph.getNumOfNodes();
@@ -203,23 +228,25 @@ public class GraphManager : MonoBehaviour
                 EdgeViewPort.transform.parent.GetChild(1).gameObject.SetActive(true);
             }
             else { NodeViewPort.transform.parent.GetChild(1).gameObject.SetActive(false); }
-            Transform DataManagementRect = DataManagementPanel.transform.GetChild(0).transform;
+            Transform DataManagementRect = canvas.transform.GetChild(1).GetChild(0).transform;
             DataManagementRect.GetChild(3).GetChild(0).GetComponent<TextMeshProUGUI>().text = Path.GetFileName(path);
             DataManagementRect.GetChild(3).GetChild(0).GetComponent<TextMeshProUGUI>().color = new Color(0, 0.5f, 0, 1f);
             DataManagementRect.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfNodes();
             DataManagementRect.GetChild(5).GetChild(0).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfEdges();
             SpringJointList = new SpringJoint[numOfEdges];
+            generateCube();
             InitializeSliderMaxValues();
         }
     }
+
 
     private void InitializeSliderMaxValues()
     {
         sliderMaxDistance.maxValue = fieldSize;
         sliderMinDistance.maxValue = fieldSize;
         sliderSpring.maxValue = 1000;
-        sliderDamper.maxValue = 100;
-        sliderColliderRadius.maxValue = 100;
+        sliderDamper.maxValue = 1000;
+        sliderColliderRadius.maxValue = 10;
         sliderMaxDistance.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderMaxDistance.maxValue;
         sliderMinDistance.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderMinDistance.maxValue;
         sliderSpring.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderSpring.maxValue;
@@ -227,31 +254,29 @@ public class GraphManager : MonoBehaviour
         sliderColliderRadius.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderColliderRadius.maxValue;
     }
 
-    public void toggleLoadingScreen(bool on)
-    {
-        DataManagementPanel.transform.GetChild(1).gameObject.SetActive(on);
-    }
-
     public void exportToCSV()
     {
         string[] fileExtensions = { "csv" };
         string delimiter = ";";
 
-        string defaultPath = Application.dataPath;
         string defaultFileName = "Exported Data";
-        string filePath = EditorUtility.SaveFilePanel("Save File", defaultPath, defaultFileName, fileExtensions[0]);
+        SaveFileDialog saveFileDialog = new SaveFileDialog();
+        saveFileDialog.Filter = string.Format("{0} files (*.{1})|*.{1}", "CSV", fileExtensions[0]);
+        saveFileDialog.FileName = defaultFileName;
 
-        StreamWriter exportedFile = new(filePath);
-
-        foreach (Node node in graph.getNodes())
+        if (saveFileDialog.ShowDialog() == DialogResult.OK)
         {
-            exportedFile.WriteLine("N" + delimiter + node.getNodeId() + delimiter + node.getPosition().x + delimiter + node.getPosition().y + delimiter + node.getPosition().z);
+            string filePath = saveFileDialog.FileName;
+            using StreamWriter exportedFile = new StreamWriter(filePath);
+            foreach (Node node in graph.getNodes())
+            {
+                exportedFile.WriteLine("N" + delimiter + node.getNodeId() + delimiter + node.getPosition().x + delimiter + node.getPosition().y + delimiter + node.getPosition().z);
+            }
+            foreach (Edge edge in graph.getEdges())
+            {
+                exportedFile.WriteLine("E" + delimiter + edge.getEdgeId() + delimiter + edge.getStartNode().getNodeId() + delimiter + edge.getEndNode().getNodeId() + delimiter + (int)edge.getDirection());
+            }
         }
-        foreach (Edge edge in graph.getEdges())
-        {
-            exportedFile.WriteLine("E" + delimiter + edge.getEdgeId() + delimiter + edge.getStartNode().getNodeId() + delimiter + edge.getEndNode().getNodeId() + delimiter + (int)edge.getDirection());
-        }
-        exportedFile.Close();
     }
 
     public void loadGraphFromCSV(string filepath, bool overwrite)
@@ -390,15 +415,15 @@ public class GraphManager : MonoBehaviour
     public void generateCube()
     {
         // The purpose of this functionality was the creation of a measuring device, so that the node and edge positions could be measured in real time.
-        // But sadly there isn't enough time to flesh it out. For now this method just creates a cube around the graph.
+        // But sadly there isn't enough time to flesh it out. For now this method just creates a cube around the graph, which if nothing helps with the graph staying in one place.
         if (quadList.Count == 0)
         {
-            GameObject North = Instantiate(quadPrefab, new Vector3(1f * fieldSize, 0, 0), Quaternion.Euler(0, 90.0f, 0), transform.GetChild(1));
-            GameObject West = Instantiate(quadPrefab, new Vector3(0, 0, 1f * fieldSize), Quaternion.Euler(0, 0, 0), transform.GetChild(1));
-            GameObject East = Instantiate(quadPrefab, new Vector3(0, 0, -1f * fieldSize), Quaternion.Euler(0, 180.0f, 0), transform.GetChild(1));
-            GameObject South = Instantiate(quadPrefab, new Vector3(-1f * fieldSize, 0, 0), Quaternion.Euler(0, -90.0f, 0), transform.GetChild(1));
-            GameObject Top = Instantiate(quadPrefab, new Vector3(0, 1f * fieldSize, 0), Quaternion.Euler(-90.0f, 0, 0), transform.GetChild(1));
-            GameObject Bottom = Instantiate(quadPrefab, new Vector3(0, -1f * fieldSize, 0), Quaternion.Euler(90.0f, 0, 0), transform.GetChild(1));
+            GameObject North = Instantiate(quadPrefab, new Vector3(10f * fieldSize, 0, 0), Quaternion.Euler(0, 90.0f, 0), transform.GetChild(1));
+            GameObject West = Instantiate(quadPrefab, new Vector3(0, 0, 10f * fieldSize), Quaternion.Euler(0, 0, 0), transform.GetChild(1));
+            GameObject East = Instantiate(quadPrefab, new Vector3(0, 0, -10f * fieldSize), Quaternion.Euler(0, 180.0f, 0), transform.GetChild(1));
+            GameObject South = Instantiate(quadPrefab, new Vector3(-10f * fieldSize, 0, 0), Quaternion.Euler(0, -90.0f, 0), transform.GetChild(1));
+            GameObject Top = Instantiate(quadPrefab, new Vector3(0, 10f * fieldSize, 0), Quaternion.Euler(-90.0f, 0, 0), transform.GetChild(1));
+            GameObject Bottom = Instantiate(quadPrefab, new Vector3(0, -10f * fieldSize, 0), Quaternion.Euler(90.0f, 0, 0), transform.GetChild(1));
 
             North.name = "NorthQuadWall";
             West.name = "WestQuadWall";
@@ -417,21 +442,21 @@ public class GraphManager : MonoBehaviour
             foreach (GameObject quad in quadList)
             {
                 quad.transform.parent = transform;
-                quad.transform.localScale = new Vector3(2 * fieldSize, 2 * fieldSize, 1);
+                quad.transform.localScale = new Vector3(20 * fieldSize, 20 * fieldSize, 1);
             }
         }
         else
         {
-            quadList[0].transform.position = new Vector3(1f * fieldSize, 0, 0);
-            quadList[1].transform.position = new Vector3(0, 0, 1f * fieldSize);
-            quadList[2].transform.position = new Vector3(0, 0, -1f * fieldSize);
-            quadList[3].transform.position = new Vector3(-1f * fieldSize, 0, 0);
-            quadList[4].transform.position = new Vector3(0, 1f * fieldSize, 0);
-            quadList[5].transform.position = new Vector3(0, -1f * fieldSize, 0);
+            quadList[0].transform.position = new Vector3(10f * fieldSize, 0, 0);
+            quadList[1].transform.position = new Vector3(0, 0, 10f * fieldSize);
+            quadList[2].transform.position = new Vector3(0, 0, -10f * fieldSize);
+            quadList[3].transform.position = new Vector3(-10f * fieldSize, 0, 0);
+            quadList[4].transform.position = new Vector3(0, 10f * fieldSize, 0);
+            quadList[5].transform.position = new Vector3(0, -10f * fieldSize, 0);
             foreach (GameObject quad in quadList)
             {
                 quad.SetActive(true);
-                quad.transform.localScale = new Vector3(2 * fieldSize, 2 * fieldSize, 1);
+                quad.transform.localScale = new Vector3(20 * fieldSize, 20 * fieldSize, 1);
             }
         }
     }
