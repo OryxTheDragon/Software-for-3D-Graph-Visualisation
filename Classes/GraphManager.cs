@@ -22,8 +22,8 @@ public class GraphManager : MonoBehaviour
     public GameObject baseVertexModel;
     public GameObject baseEdgeModel;
     public GameObject quadPrefab;
-    public GameObject DirectedConnector;
-    public GameObject UndirectedConnector;
+    public GameObject DirectedConnectorPrefab;
+    public GameObject UndirectedConnectorPrefab;
     public TextMeshProUGUI TextItem;
 
     //Data Structures:
@@ -32,16 +32,15 @@ public class GraphManager : MonoBehaviour
     private Treap<string, GameObject> EdgeGameObjects;
 
     //Necessary Data:
-    public float fieldSize = 500.0f;
-    public int OptimizationLimit = 10000;
+    private float fieldSize = 500.0f;
+    private int OptimizationLimit = 10000;
     private readonly bool overrideLoadedData = true;
-    List<GameObject> quadList = new();
+    private List<GameObject> quadList = new();
     private int numOfNodes;
     private int numOfEdges;
 
     //Data Manager:
     private ObjectSelectionManager selectionManager;
-    private Camera mainCamera;
 
     //UI References:
     public GameObject canvas;
@@ -51,16 +50,12 @@ public class GraphManager : MonoBehaviour
 
     // Data Lab Resources:
     public GameObject listCellPrefab;
-    public GameObject NodeViewPort;
-    public GameObject EdgeViewPort;
+    public GameObject NodeViewList;
+    public GameObject EdgeViewList;
 
     // Physics and Statistics Resources:
-    public SpringJoint[] SpringJointList;
-    public Slider sliderSpring;
-    public Slider sliderDamper;
-    public Slider sliderMinDistance;
-    public Slider sliderMaxDistance;
-    public Slider sliderColliderRadius;
+    private SpringJoint[] SpringJointArray;
+    public Slider[] sliders;
 
     void Start()
     {
@@ -69,8 +64,7 @@ public class GraphManager : MonoBehaviour
             Physics.autoSimulation = false;
             graph = new Graph();
             selectionManager = new ObjectSelectionManager();
-            mainCamera = Camera.main;
-            mainCamera.GetComponent<CameraController>().selectionManager = selectionManager;
+            Camera.main.GetComponent<CameraController>().selectionManager = selectionManager;
         }
     }
     private void Update()
@@ -132,23 +126,23 @@ public class GraphManager : MonoBehaviour
         GameObject connector;
         if (edge.getDirection() == Direction.Undirected)
         {
-            connector = Instantiate(UndirectedConnector, graphParent.transform);
+            connector = Instantiate(UndirectedConnectorPrefab, graphParent.transform);
         }
         else if (edge.getDirection() == Direction.Directed)
         {
-            connector = Instantiate(DirectedConnector, graphParent.transform);
+            connector = Instantiate(DirectedConnectorPrefab, graphParent.transform);
         }
         else
         {
             connector = Instantiate(baseEdgeModel, graphParent.transform);
         }
 
-        connector.GetComponent<DynamicEdgeTransformation>().startNode = NodeGameObjects.getTNode(edge.getStartNode().getNodeId()).transform;
-        connector.GetComponent<DynamicEdgeTransformation>().endNode = NodeGameObjects.getTNode(edge.getEndNode().getNodeId()).transform;
-        SpringJoint springJoint = connector.GetComponent<DynamicEdgeTransformation>().startNode.gameObject.AddComponent<SpringJoint>();
-        springJoint.connectedBody = connector.GetComponent<DynamicEdgeTransformation>().endNode.GetComponent<Rigidbody>();
+        connector.GetComponent<DynamicScale>().startNode = NodeGameObjects.getTNodeValue(edge.getStartNode().getNodeId()).transform;
+        connector.GetComponent<DynamicScale>().endNode = NodeGameObjects.getTNodeValue(edge.getEndNode().getNodeId()).transform;
+        SpringJoint springJoint = connector.GetComponent<DynamicScale>().startNode.gameObject.AddComponent<SpringJoint>();
+        springJoint.connectedBody = connector.GetComponent<DynamicScale>().endNode.GetComponent<Rigidbody>();
         springJoint.enableCollision = true;
-        SpringJointList[counter - 1] = springJoint;
+        SpringJointArray[counter - 1] = springJoint;
         EdgeGameObjects.insert(edge.getEdgeId(), connector);
         ObjectID newEdgeId = connector.GetComponent<ObjectID>();
         newEdgeId._id = edge.getEdgeId();
@@ -160,7 +154,7 @@ public class GraphManager : MonoBehaviour
 
     private void CreateNodeListEntry(string node_id, int counter)
     {
-        GameObject listCell = Instantiate(listCellPrefab, NodeViewPort.transform);
+        GameObject listCell = Instantiate(listCellPrefab, NodeViewList.transform);
         TextMeshProUGUI[] textComponents = listCell.GetComponentsInChildren<TextMeshProUGUI>();
         listCell.GetComponent<Button>().onClick.AddListener(() => highlightNodeFromUICell(node_id, listCell));
         textComponents[0].text = "" + counter;
@@ -169,7 +163,7 @@ public class GraphManager : MonoBehaviour
 
     private void CreateEdgeListEntry(string edge_id, int counter)
     {
-        GameObject listCell = Instantiate(listCellPrefab, EdgeViewPort.transform);
+        GameObject listCell = Instantiate(listCellPrefab, EdgeViewList.transform);
         TextMeshProUGUI[] textComponents = listCell.GetComponentsInChildren<TextMeshProUGUI>();
         listCell.GetComponent<Button>().onClick.AddListener(() =>
         {
@@ -181,13 +175,13 @@ public class GraphManager : MonoBehaviour
 
     private void highlightEdgeFromUICell(string edge_id, GameObject cell)
     {
-        GameObject selectedEdge = EdgeGameObjects.getTNode(edge_id);
+        GameObject selectedEdge = EdgeGameObjects.getTNodeValue(edge_id);
         selectionManager.selectObject(selectedEdge, cell);
     }
 
     private void highlightNodeFromUICell(string node_id, GameObject cell)
     {
-        GameObject selectedNode = NodeGameObjects.getTNode(node_id);
+        GameObject selectedNode = NodeGameObjects.getTNodeValue(node_id);
         selectionManager.selectObject(selectedNode, cell);
     }
     public void selectFileForImport()
@@ -220,20 +214,20 @@ public class GraphManager : MonoBehaviour
             numOfEdges = graph.getNumOfEdges();
             if (numOfNodes >= OptimizationLimit)
             {
-                NodeViewPort.transform.parent.GetChild(1).gameObject.SetActive(true);
+                NodeViewList.transform.parent.GetChild(1).gameObject.SetActive(true);
             }
-            else { NodeViewPort.transform.parent.GetChild(1).gameObject.SetActive(false); }
+            else { NodeViewList.transform.parent.GetChild(1).gameObject.SetActive(false); }
             if (numOfEdges >= OptimizationLimit)
             {
-                EdgeViewPort.transform.parent.GetChild(1).gameObject.SetActive(true);
+                EdgeViewList.transform.parent.GetChild(1).gameObject.SetActive(true);
             }
-            else { NodeViewPort.transform.parent.GetChild(1).gameObject.SetActive(false); }
+            else { NodeViewList.transform.parent.GetChild(1).gameObject.SetActive(false); }
             Transform DataManagementRect = canvas.transform.GetChild(1).GetChild(0).transform;
             DataManagementRect.GetChild(3).GetChild(0).GetComponent<TextMeshProUGUI>().text = Path.GetFileName(path);
             DataManagementRect.GetChild(3).GetChild(0).GetComponent<TextMeshProUGUI>().color = new Color(0, 0.5f, 0, 1f);
             DataManagementRect.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfNodes();
             DataManagementRect.GetChild(5).GetChild(0).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfEdges();
-            SpringJointList = new SpringJoint[numOfEdges];
+            SpringJointArray = new SpringJoint[numOfEdges];
             generateCube();
             InitializeSliderMaxValues();
         }
@@ -242,16 +236,16 @@ public class GraphManager : MonoBehaviour
 
     private void InitializeSliderMaxValues()
     {
-        sliderMaxDistance.maxValue = fieldSize;
-        sliderMinDistance.maxValue = fieldSize;
-        sliderSpring.maxValue = 1000;
-        sliderDamper.maxValue = 1000;
-        sliderColliderRadius.maxValue = 10;
-        sliderMaxDistance.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderMaxDistance.maxValue;
-        sliderMinDistance.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderMinDistance.maxValue;
-        sliderSpring.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderSpring.maxValue;
-        sliderDamper.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderDamper.maxValue;
-        sliderColliderRadius.transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliderColliderRadius.maxValue;
+        sliders[3].maxValue = fieldSize;
+        sliders[2].maxValue = fieldSize;
+        sliders[0].maxValue = 1000;
+        sliders[1].maxValue = 1000;
+        sliders[4].maxValue = 10;
+        sliders[3].transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliders[3].maxValue;
+        sliders[2].transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliders[2].maxValue;
+        sliders[0].transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliders[0].maxValue;
+        sliders[1].transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliders[1].maxValue;
+        sliders[4].transform.GetChild(4).GetComponent<TextMeshProUGUI>().text = "" + sliders[4].maxValue;
     }
 
     public void exportToCSV()
@@ -323,8 +317,8 @@ public class GraphManager : MonoBehaviour
                     else if (values.Length == 5)
                     {
                         string edgeId = values[1];
-                        Node startNode = graph.getNodes().getTNode(values[2]);
-                        Node endNode = graph.getNodes().getTNode(values[3]);
+                        Node startNode = graph.getNodes().getTNodeValue(values[2]);
+                        Node endNode = graph.getNodes().getTNodeValue(values[3]);
                         if (startNode == null || endNode == null)
                         {
                             Debug.LogErrorFormat("Invalid data format in line: {0}", line);
@@ -361,13 +355,13 @@ public class GraphManager : MonoBehaviour
         {
             Destroy(node);
         }
-        for (int i = NodeViewPort.transform.childCount - 1; i >= 0; i--)
+        for (int i = NodeViewList.transform.childCount - 1; i >= 0; i--)
         {
-            Destroy(NodeViewPort.transform.GetChild(i).gameObject);
+            Destroy(NodeViewList.transform.GetChild(i).gameObject);
         }
-        for (int i = EdgeViewPort.transform.childCount - 1; i >= 0; i--)
+        for (int i = EdgeViewList.transform.childCount - 1; i >= 0; i--)
         {
-            Destroy(EdgeViewPort.transform.GetChild(i).gameObject);
+            Destroy(EdgeViewList.transform.GetChild(i).gameObject);
         }
     }
 
@@ -375,38 +369,38 @@ public class GraphManager : MonoBehaviour
 
     public void physicsJointSpringChange()
     {
-        foreach (SpringJoint joint in SpringJointList)
+        foreach (SpringJoint joint in SpringJointArray)
         {
-            joint.spring = sliderSpring.value;
+            joint.spring = sliders[0].value;
         }
 
     }
     public void physicsJointDamperChange()
     {
-        foreach (SpringJoint joint in SpringJointList)
+        foreach (SpringJoint joint in SpringJointArray)
         {
-            joint.damper = sliderDamper.value;
+            joint.damper = sliders[1].value;
         }
     }
     public void physicsJointMinDistanceChange()
     {
-        foreach (SpringJoint joint in SpringJointList)
+        foreach (SpringJoint joint in SpringJointArray)
         {
-            joint.maxDistance = sliderMinDistance.value;
+            joint.maxDistance = sliders[2].value;
         }
     }
     public void physicsJointMaxDistanceChange()
     {
-        foreach (SpringJoint joint in SpringJointList)
+        foreach (SpringJoint joint in SpringJointArray)
         {
-            joint.minDistance = sliderMaxDistance.value;
+            joint.minDistance = sliders[3].value;
         }
     }
     public void physicsNodeCollisionSphereSize()
     {
         foreach (GameObject node in NodeGameObjects)
         {
-            node.GetComponent<SphereCollider>().radius = sliderColliderRadius.value;
+            node.GetComponent<SphereCollider>().radius = sliders[4].value;
         }
     }
 

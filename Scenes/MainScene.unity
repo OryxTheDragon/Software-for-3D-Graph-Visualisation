@@ -1217,11 +1217,9 @@ MonoBehaviour:
   baseVertexModel: {fileID: 5225428257518851890, guid: 743444b7e3976944ab8186e7e6fe7840, type: 3}
   baseEdgeModel: {fileID: 5975482577351263407, guid: b2dc5a3bd42f7414dba4cf5f7e6b18b2, type: 3}
   quadPrefab: {fileID: 6111868667875889475, guid: 976440bc1e34574419cbf510892f3462, type: 3}
-  DirectedConnector: {fileID: 5050268367218988994, guid: e20ea03fea9908f448194d85ce85966b, type: 3}
-  UndirectedConnector: {fileID: 5050268367218988994, guid: 71643e6e7301e814aa84d3ca9c6b04c4, type: 3}
+  DirectedConnectorPrefab: {fileID: 5050268367218988994, guid: e20ea03fea9908f448194d85ce85966b, type: 3}
+  UndirectedConnectorPrefab: {fileID: 5050268367218988994, guid: 71643e6e7301e814aa84d3ca9c6b04c4, type: 3}
   TextItem: {fileID: 4536343723135053272, guid: 48c6ff83422b5944b8ea57d0079f5ff9, type: 3}
-  fieldSize: 500
-  OptimizationLimit: 10000
   canvas: {fileID: 1028386944}
   tabPages:
   - {fileID: 630125544}
@@ -1232,14 +1230,14 @@ MonoBehaviour:
   - {fileID: 1845336084}
   - {fileID: 1614163792}
   listCellPrefab: {fileID: 4117420241197427900, guid: 8c10ac57d425d004cbd079de0ceda0d6, type: 3}
-  NodeViewPort: {fileID: 1086452677}
-  EdgeViewPort: {fileID: 1866763400}
-  SpringJointList: []
-  sliderSpring: {fileID: 355137720}
-  sliderDamper: {fileID: 1022254502}
-  sliderMinDistance: {fileID: 1642744285}
-  sliderMaxDistance: {fileID: 630430389}
-  sliderColliderRadius: {fileID: 1244056102}
+  NodeViewList: {fileID: 1086452677}
+  EdgeViewList: {fileID: 1866763400}
+  sliders:
+  - {fileID: 355137720}
+  - {fileID: 1022254502}
+  - {fileID: 1642744285}
+  - {fileID: 630430389}
+  - {fileID: 1244056102}
 --- !u!1 &279966613
 GameObject:
   m_ObjectHideFlags: 0
@@ -3148,7 +3146,7 @@ GameObject:
   - component: {fileID: 900482335}
   - component: {fileID: 900482334}
   m_Layer: 0
-  m_Name: Save Graph
+  m_Name: Export Graph
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3220,8 +3218,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 243450242}
-        m_TargetAssemblyTypeName: GraphComponent, Assembly-CSharp
-        m_MethodName: ExportToCSV
+        m_TargetAssemblyTypeName: GraphManager, Assembly-CSharp
+        m_MethodName: exportToCSV
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3443,7 +3441,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c6f415f4a35645488b233bcfaaf0633, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  anchorPoint: {fileID: 243450241}
   movementSpeed: 20
   rotationSpeed: 10
 --- !u!54 &963194230

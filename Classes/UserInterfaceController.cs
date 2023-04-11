@@ -5,7 +5,7 @@ public class UserInterfaceController : MonoBehaviour
 {
     public Canvas canvas;
 
-    private bool canvasEnabled;
+    private bool isCanvasEnabled;
 
     public ScrollRect nodeScrollView;
     public ScrollRect edgeScrollView;
@@ -14,8 +14,8 @@ public class UserInterfaceController : MonoBehaviour
 
     private void Start()
     {
-        canvasEnabled = true;
-        canvas.enabled = canvasEnabled;
+        isCanvasEnabled = true;
+        canvas.enabled = isCanvasEnabled;
 
         nodeScrollView.gameObject.SetActive(true);
         edgeScrollView.gameObject.SetActive(false);
@@ -32,8 +32,8 @@ public class UserInterfaceController : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            canvasEnabled = !canvasEnabled;
-            canvas.enabled = canvasEnabled;
+            isCanvasEnabled = !isCanvasEnabled;
+            canvas.enabled = isCanvasEnabled;
         }
     }
 }

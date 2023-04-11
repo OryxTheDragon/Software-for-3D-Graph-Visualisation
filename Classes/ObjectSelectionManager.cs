@@ -6,47 +6,47 @@ namespace Assets.Classes
 {
     public class ObjectSelectionManager
     {
-        private readonly List<GameObject> nodes;
-        private readonly List<GameObject> edges;
+        private readonly List<GameObject> selectedNodes;
+        private readonly List<GameObject> selectedEdges;
         private readonly float intensity = 100.0f;
 
         public ObjectSelectionManager()
         {
-            nodes = new List<GameObject>();
-            edges = new List<GameObject>();
+            selectedNodes = new List<GameObject>();
+            selectedEdges = new List<GameObject>();
         }
 
-        public List<GameObject> getNodes() { return nodes; }
-        public List<GameObject> getEdges() { return edges; }
+        public List<GameObject> getNodes() { return selectedNodes; }
+        public List<GameObject> getEdges() { return selectedEdges; }
 
         public void selectObject(GameObject selectedObject, GameObject ListCell)
         {
             if (selectedObject.CompareTag("Vertex"))
             {
-                if (!nodes.Contains(selectedObject))
+                if (!selectedNodes.Contains(selectedObject))
                 {
-                    nodes.Add(selectedObject);
+                    selectedNodes.Add(selectedObject);
                     highlightObject(selectedObject);
                     ListCell.GetComponent<Button>().GetComponent<Image>().color = new Color(0.3f, 0.8f, 0.4f, 1f);
                 }
                 else
                 {
-                    nodes.Remove(selectedObject);
+                    selectedNodes.Remove(selectedObject);
                     resetObject(selectedObject);
                     ListCell.GetComponent<Button>().GetComponent<Image>().color = Color.white;
                 }
             }
             else if (selectedObject.CompareTag("Connector"))
             {
-                if (!edges.Contains(selectedObject))
+                if (!selectedEdges.Contains(selectedObject))
                 {
-                    edges.Add(selectedObject);
+                    selectedEdges.Add(selectedObject);
                     highlightObject(selectedObject);
                     ListCell.GetComponent<Button>().GetComponent<Image>().color = new Color(0.3f, 0.8f, 0.4f, 1f);
                 }
                 else
                 {
-                    edges.Remove(selectedObject);
+                    selectedEdges.Remove(selectedObject);
                     resetObject(selectedObject);
                     ListCell.GetComponent<Button>().GetComponent<Image>().color = Color.white;
                 }
@@ -55,17 +55,17 @@ namespace Assets.Classes
 
         public void deselectAll()
         {
-            foreach (GameObject node in nodes)
+            foreach (GameObject node in selectedNodes)
             {
                 resetObject(node);
             }
-            nodes.Clear();
+            selectedNodes.Clear();
 
-            foreach (GameObject edge in edges)
+            foreach (GameObject edge in selectedEdges)
             {
                 resetObject(edge);
             }
-            edges.Clear();
+            selectedEdges.Clear();
         }
 
         private void highlightObject(GameObject obj)

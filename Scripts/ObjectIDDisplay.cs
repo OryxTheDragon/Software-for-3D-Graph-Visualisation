@@ -1,7 +1,5 @@
 ﻿using Assets.Scripts;
-using System.Linq;
 using UnityEngine;
-using static UnityEngine.Mathf;
 
 public class ObjectIDDisplay : MonoBehaviour
 {
@@ -11,7 +9,7 @@ public class ObjectIDDisplay : MonoBehaviour
     private bool isDisplaying = false; // Whether the GUI window is currently being displayed
     private string objectID = ""; // The ID of the object being displayed
     private string content = "";
-    RaycastHit lastHit;
+    private RaycastHit lastHit;
 
     void Update()
     {

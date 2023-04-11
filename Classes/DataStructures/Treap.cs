@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using System.Collections.Generic;
 namespace Assets.Classes.DataStructures
 {
     using System;
     using System.Collections;
-    using UnityEngine.Networking.Types;
 
     public class Treap<K, T> : IEnumerable<T> where K : IComparable<K>
     {
@@ -37,10 +31,10 @@ namespace Assets.Classes.DataStructures
 
         public void insert(K key, T value)
         {
-            _root = Insert(_root, value, key, _random.Next());
+            _root = InsertNode(_root, value, key, _random.Next());
         }
 
-        private TreapNode Insert(TreapNode tNode, T value, K key, int priority)
+        private TreapNode InsertNode(TreapNode tNode, T value, K key, int priority)
         {
             if (tNode == null)
             {
@@ -49,7 +43,7 @@ namespace Assets.Classes.DataStructures
 
             if (key.CompareTo(tNode.Key) < 0)
             {
-                tNode.Left = Insert(tNode.Left, value, key, priority);
+                tNode.Left = InsertNode(tNode.Left, value, key, priority);
                 if (tNode.Left.Priority > tNode.Priority)
                 {
                     tNode = RotateRight(tNode);
@@ -57,7 +51,7 @@ namespace Assets.Classes.DataStructures
             }
             else
             {
-                tNode.Right = Insert(tNode.Right, value, key, priority);
+                tNode.Right = InsertNode(tNode.Right, value, key, priority);
                 if (tNode.Right.Priority > tNode.Priority)
                 {
                     tNode = RotateLeft(tNode);
@@ -71,7 +65,7 @@ namespace Assets.Classes.DataStructures
 
         public bool remove(K key)
         {
-            if (Find(_root, key) == null)
+            if (FindNode(_root, key) == null)
             {
                 return false;
             }
@@ -116,11 +110,11 @@ namespace Assets.Classes.DataStructures
             return tNode;
         }
 
-        public bool contains(K key)
+        public bool containsKey(K key)
         {
-            return Find(_root, key) != null;
+            return FindNode(_root, key) != null;
         }
-        private TreapNode Find(TreapNode tNode, K key)
+        private TreapNode FindNode(TreapNode tNode, K key)
         {
             while (tNode != null)
             {
@@ -140,7 +134,7 @@ namespace Assets.Classes.DataStructures
 
             return null;
         }
-        public T getTNode(K key)
+        public T getTNodeValue(K key)
         {
             TreapNode node = _root;
             TreapNode returnedNode = node;
@@ -179,7 +173,6 @@ namespace Assets.Classes.DataStructures
 
         public IEnumerator<T> GetEnumerator()
         {
-            // I decided to implement the in-order traversal method
             if (_root == null)
             {
                 yield break;
@@ -190,14 +183,12 @@ namespace Assets.Classes.DataStructures
 
             while (current != null || stack.Count > 0)
             {
-                // Traverse all the way to the leftmost tNode
                 while (current != null)
                 {
                     stack.Push(current);
                     current = current.Left;
                 }
 
-                // Visit the leftmost tNode and move to its right subtree
                 current = stack.Pop();
                 yield return current.Value;
                 current = current.Right;

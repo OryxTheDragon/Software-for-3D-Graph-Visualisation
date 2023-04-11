@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Assets.Classes.DataObjects;
 using System.IO;
-using UnityEngine.UIElements;
 using System.Linq;
-using UnityEngine.Networking.Types;
-using System.Collections;
 
 namespace Assets.Classes.DataStructures
 {
@@ -64,7 +60,7 @@ namespace Assets.Classes.DataStructures
 
         public void insertNode(Node node)
         {
-            if (!nodes.contains(node.getNodeId()))
+            if (!nodes.containsKey(node.getNodeId()))
             {
                 nodes.insert(node.getNodeId(), node);
                 numOfNodes++;
@@ -103,7 +99,12 @@ namespace Assets.Classes.DataStructures
 
         public Node searchNodes(string node_id)
         {
-            return nodes.getTNode(node_id);
+            return nodes.getTNodeValue(node_id);
+        }
+
+        public Edge searchEdges(string edge_id)
+        {
+            return edges.getTNodeValue(edge_id);
         }
 
         public void removeEdge(Edge edge)

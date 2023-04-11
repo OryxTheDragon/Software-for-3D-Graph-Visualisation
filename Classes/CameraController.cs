@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using UnityEngine;
-using UnityEngine.UIElements;
+﻿using UnityEngine;
 
 namespace Assets.Classes
 {
     class CameraController : MonoBehaviour
     {
-        public Transform anchorPoint;
-
         public float movementSpeed = 1.0f;
         private bool OmegaBoost = false;
         private bool speedBoost = false;
