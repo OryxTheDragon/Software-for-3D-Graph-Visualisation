@@ -3395,7 +3395,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.01
-  far clip plane: 10000.01
+  far clip plane: 15000.01
   field of view: 59.8
   orthographic: 0
   orthographic size: 5
@@ -3441,8 +3441,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c6f415f4a35645488b233bcfaaf0633, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 20
-  rotationSpeed: 10
 --- !u!54 &963194230
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3468,7 +3466,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 728507a8b170c5b4fbf4333ce1b30994, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a4fe4a80fea8e44b8280b1996f632e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   canvas: {fileID: 1028386948}
@@ -3876,7 +3874,6 @@ GameObject:
   - component: {fileID: 1028386948}
   - component: {fileID: 1028386947}
   - component: {fileID: 1028386946}
-  - component: {fileID: 1028386949}
   - component: {fileID: 1028386950}
   m_Layer: 0
   m_Name: Canvas
@@ -3972,21 +3969,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!114 &1028386949
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1028386944}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 908c31e4fae18254899c224ac0b751f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canvas: {fileID: 1028386948}
-  scrollNodes: {fileID: 1412791434}
-  scrollEdges: {fileID: 720134281}
 --- !u!23 &1028386950
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -6836,7 +6818,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0.000009298325}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1866763402

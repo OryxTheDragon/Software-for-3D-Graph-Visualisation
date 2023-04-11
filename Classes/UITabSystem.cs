@@ -9,7 +9,7 @@ namespace Assets.Classes
         public Button[] tabButtons;
 
         private int currentPageIndex = 0;
-        void Start()
+        private void Start()
         {
             showPage(currentPageIndex);
         }

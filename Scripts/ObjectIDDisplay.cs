@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class ObjectIDDisplay : MonoBehaviour
 {
-    private float hoverTime = 1f; // The amount of time the mouse needs to hover over an object
-    private float hoverTimer = 0f; // The amount of time the mouse has hovered over an object
+    private float activationTime = 0.5f; // The amount of time the mouse needs to hover over an object
+    private float activationTimer = 0.0f; // The amount of time the mouse has hovered over an object
 
     private bool isDisplaying = false; // Whether the GUI window is currently being displayed
     private string objectID = ""; // The ID of the object being displayed
     private string content = "";
     private RaycastHit lastHit;
 
-    void Update()
+    private void Update()
     {
         // Get the position of the mouse cursor
         Vector3 mousePosition = Input.mousePosition;
@@ -23,14 +23,13 @@ public class ObjectIDDisplay : MonoBehaviour
         if (Physics.Raycast(ray, out lastHit))
         {
             // Check if the object has an ID
-            ObjectID objectIDComponent = lastHit.collider.GetComponent<ObjectID>();
-            if (objectIDComponent != null)
+            if (lastHit.collider.TryGetComponent<ObjectID>(out var objectIDComponent))
             {
                 // Start or continue the hover timer
-                hoverTimer += Time.deltaTime;
+                activationTimer += Time.deltaTime;
 
                 // If the mouse has hovered over the object for the required time, display the ID
-                if (hoverTimer >= hoverTime)
+                if (activationTimer >= activationTime)
                 {
                     objectID = objectIDComponent._id;
                     content = "ID: " + objectID + "\n" +
@@ -42,25 +41,25 @@ public class ObjectIDDisplay : MonoBehaviour
             }
             else
             {
-                hoverTimer = 0f;
+                activationTimer = 0f;
                 isDisplaying = false;
             }
         }
         else
         {
-            hoverTimer = 0f;
+            activationTimer = 0f;
             isDisplaying = false;
         }
     }
-    void OnGUI()
+    private void OnGUI()
     {
         if (isDisplaying)
         {
-            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+            GUIStyle labelStyle = new(GUI.skin.label);
             labelStyle.fontSize = 15;
-            GUIContent labelContent = new GUIContent(content);
+            GUIContent labelContent = new(content);
             Vector2 labelSize = labelStyle.CalcSize(labelContent);
-            Rect windowRect = new Rect(
+            Rect windowRect = new(
                 Input.mousePosition.x + 15f,
                 Screen.height - Input.mousePosition.y,
                 labelSize.x + 20f,
@@ -69,8 +68,9 @@ public class ObjectIDDisplay : MonoBehaviour
         }
     }
 
-    void DrawWindow(int windowID)
-    {;
+    private void DrawWindow(int windowID)
+    {
+        ;
         GUI.DragWindow();
     }
 

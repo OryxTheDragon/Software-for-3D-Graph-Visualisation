@@ -4,12 +4,12 @@ namespace Assets.Classes
 {
     class CameraController : MonoBehaviour
     {
-        public float movementSpeed = 1.0f;
+        private float movementSpeed = 1.0f;
         private bool OmegaBoost = false;
         private bool speedBoost = false;
         private bool speedSink = false;
 
-        public float rotationSpeed = 10.0f;
+        private float rotationSpeed = 10.0f;
         private float maxYAngle = 90.0f;
         private float minYAngle = -90.0f;
 

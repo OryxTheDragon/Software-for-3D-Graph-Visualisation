@@ -57,7 +57,7 @@ public class GraphManager : MonoBehaviour
     private SpringJoint[] SpringJointArray;
     public Slider[] sliders;
 
-    void Start()
+    private void Start()
     {
         if (Application.isPlaying)
         {
@@ -184,6 +184,7 @@ public class GraphManager : MonoBehaviour
         GameObject selectedNode = NodeGameObjects.getTNodeValue(node_id);
         selectionManager.selectObject(selectedNode, cell);
     }
+
     public void selectFileForImport()
     {
         if (overrideLoadedData)
@@ -229,12 +230,12 @@ public class GraphManager : MonoBehaviour
             DataManagementRect.GetChild(5).GetChild(0).GetComponent<TextMeshProUGUI>().text = "" + graph.getNumOfEdges();
             SpringJointArray = new SpringJoint[numOfEdges];
             generateCube();
-            InitializeSliderMaxValues();
+            InitializePhysicsSliderValues();
         }
     }
 
 
-    private void InitializeSliderMaxValues()
+    private void InitializePhysicsSliderValues()
     {
         sliders[3].maxValue = fieldSize;
         sliders[2].maxValue = fieldSize;
@@ -262,20 +263,27 @@ public class GraphManager : MonoBehaviour
         {
             string filePath = saveFileDialog.FileName;
             using StreamWriter exportedFile = new StreamWriter(filePath);
-            foreach (Node node in graph.getNodes())
+            foreach (GameObject node in NodeGameObjects)
             {
-                exportedFile.WriteLine("N" + delimiter + node.getNodeId() + delimiter + node.getPosition().x + delimiter + node.getPosition().y + delimiter + node.getPosition().z);
+                exportedFile.WriteLine("N" + delimiter + node.GetComponent<ObjectID>()._id 
+                    + delimiter + node.transform.position.x 
+                    + delimiter + node.transform.position.y 
+                    + delimiter + node.transform.position.z);
             }
-            foreach (Edge edge in graph.getEdges())
+            foreach (GameObject edge in EdgeGameObjects)
             {
-                exportedFile.WriteLine("E" + delimiter + edge.getEdgeId() + delimiter + edge.getStartNode().getNodeId() + delimiter + edge.getEndNode().getNodeId() + delimiter + (int)edge.getDirection());
+                string id = edge.GetComponent<ObjectID>()._id;
+                exportedFile.WriteLine("E" + delimiter + id
+                    + delimiter + edge.GetComponent<DynamicScale>().startNode.GetComponent<ObjectID>()._id
+                    + delimiter + edge.GetComponent<DynamicScale>().endNode.GetComponent<ObjectID>()._id
+                    + delimiter + graph.getEdges().getTNodeValue(id).getDirection());;
             }
         }
     }
 
-    public void loadGraphFromCSV(string filepath, bool overwrite)
+    public void loadGraphFromCSV(string filePath, bool overwrite)
     {
-        using (StreamReader reader = new(filepath))
+        using (StreamReader reader = new(filePath))
         {
             if (overwrite)
             {
@@ -346,7 +354,6 @@ public class GraphManager : MonoBehaviour
     }
     public void clearTheField()
     {
-        selectionManager.deselectAll();
         foreach (GameObject edge in EdgeGameObjects)
         {
             Destroy(edge);
@@ -403,13 +410,8 @@ public class GraphManager : MonoBehaviour
             node.GetComponent<SphereCollider>().radius = sliders[4].value;
         }
     }
-
-
-
     public void generateCube()
     {
-        // The purpose of this functionality was the creation of a measuring device, so that the node and edge positions could be measured in real time.
-        // But sadly there isn't enough time to flesh it out. For now this method just creates a cube around the graph, which if nothing helps with the graph staying in one place.
         if (quadList.Count == 0)
         {
             GameObject North = Instantiate(quadPrefab, new Vector3(10f * fieldSize, 0, 0), Quaternion.Euler(0, 90.0f, 0), transform.GetChild(1));

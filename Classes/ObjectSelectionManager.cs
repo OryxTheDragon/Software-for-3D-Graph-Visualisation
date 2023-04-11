@@ -8,7 +8,7 @@ namespace Assets.Classes
     {
         private readonly List<GameObject> selectedNodes;
         private readonly List<GameObject> selectedEdges;
-        private readonly float intensity = 100.0f;
+        private readonly float selectedHighlightIntensity = 100.0f;
 
         public ObjectSelectionManager()
         {
@@ -53,21 +53,6 @@ namespace Assets.Classes
             }
         }
 
-        public void deselectAll()
-        {
-            foreach (GameObject node in selectedNodes)
-            {
-                resetObject(node);
-            }
-            selectedNodes.Clear();
-
-            foreach (GameObject edge in selectedEdges)
-            {
-                resetObject(edge);
-            }
-            selectedEdges.Clear();
-        }
-
         private void highlightObject(GameObject obj)
         {
             if (obj.CompareTag("Vertex"))
@@ -75,7 +60,7 @@ namespace Assets.Classes
                 Renderer renderer = obj.GetComponent<Renderer>();
                 Material material = renderer.material;
                 material.EnableKeyword("_EMISSION");
-                material.SetColor("_EmissionColor", material.color * intensity);
+                material.SetColor("_EmissionColor", material.color * selectedHighlightIntensity);
 
             }
             else if (obj.CompareTag("Connector"))
@@ -84,7 +69,7 @@ namespace Assets.Classes
                 {
                     Renderer connectorRenderer = obj.transform.GetChild(i).GetComponent<Renderer>();
                     connectorRenderer.material.EnableKeyword("_EMISSION");
-                    connectorRenderer.material.SetColor("_EmissionColor", connectorRenderer.material.color * intensity);
+                    connectorRenderer.material.SetColor("_EmissionColor", connectorRenderer.material.color * selectedHighlightIntensity);
                 }
             }
         }
