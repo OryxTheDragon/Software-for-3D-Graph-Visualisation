@@ -3753,15 +3753,16 @@ MonoBehaviour:
     in green text. This means that you can now visualise the loaded data in a 3D
     graph. use the VISUALISE DATA button.\n\nNOTE:\nYou can load mode files at once.
     However if you visualise them, the next time you'll load a file, it will overwrite
-    every file visualised.\n\nMOVEMENT CONTROLS:\nTo move around the 3D space, you
-    use W A S D keys for forward, backward and sideway motion.\nSpace, C for upward
-    and downward motion.\nHolding Left Shift while moving will speed the camera up.
-    If the speed is not enough, you can additionaly press E with Left Shift.\n\nCAMERA
-    ROTATION CONTROLS:\nTo rotate the camera sideways upwards and downwards, press
-    the right mouse button and then drag mouse in desired direction. Camera movement
-    corresponds to the mouse movement.\nIf you press the mouse button, horizontal
-    mouse movement will rotate the camera around the Z axis. This is dangerous however
-    and will impact all other movement. To reset the Z axis rotation to default,
+    every file visualised. Node and Edge select functionality is disabled on graphs
+    where node or edge amount surpasses 10 000.\n\nMOVEMENT CONTROLS:\nTo move around
+    the 3D space, you use W A S D keys for forward, backward and sideway motion.\nSpace,
+    C for upward and downward motion.\nHolding Left Shift while moving will speed
+    the camera up. If the speed is not enough, you can additionaly press E with Left
+    Shift.\n\nCAMERA ROTATION CONTROLS:\nTo rotate the camera sideways upwards and
+    downwards, press the right mouse button and then drag mouse in desired direction.
+    Camera movement corresponds to the mouse movement.\nIf you press the mouse button,
+    horizontal mouse movement will rotate the camera around the Z axis. This is dangerous
+    however and will impact all other movement. To reset the Z axis rotation to default,
     press the Backspace key.\n \nUI CONTROLS:\nPressing TAB key will show or hide
     the user interface.\nWhile in Node/Edge selection tab, you can swap between the
     list of nodes and the list of edges using the Left ALT key.\nYou swap between
@@ -3796,7 +3797,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 29.95
+  m_fontSize: 29.7
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

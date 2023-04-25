@@ -4,7 +4,6 @@ public class DynamicScale : MonoBehaviour
     public Transform startNode;
     public Transform endNode;
 
-    // Update is called once per frame
     void Update()
     {
         Vector3 startNodePosition = startNode.position;
